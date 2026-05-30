@@ -2383,7 +2383,28 @@ function remaining(){return Math.max(0,TRIAL_LIMIT-getUsage())}
 
 // -- ROUTING ------------------------------------------------
 function showLP(){window.location.href='/';}
-function goApp(){document.getElementById('landing').style.display='none';document.getElementById('app').classList.add('show');document.body.style.overflow='hidden';updateTrialUI()}
+function goApp(){
+  const landingEl=document.getElementById('landing');
+  if(landingEl)landingEl.style.display='none';
+  document.getElementById('app').classList.add('show');
+  document.body.style.overflow='hidden';
+  updateTrialUI();
+  // FIX 5: Handle plan param after login
+  const urlParams=new URLSearchParams(window.location.search);
+  const planParam=urlParams.get('plan');
+  if(planParam==='agency'&&!isPaid()){
+    setTimeout(()=>{
+      showPaywall();
+      setTimeout(()=>{
+        const agencyCard=document.getElementById('pw-buy-agency')?.closest('div[style*="border-radius:12px"]');
+        if(agencyCard){
+          agencyCard.style.cssText+=';border:1px solid rgba(184,240,0,.6)!important;';
+          agencyCard.scrollIntoView({behavior:'smooth',block:'center'});
+        }
+      },300);
+    },500);
+  }
+}
 function showPaywall(){
   document.getElementById('paywall').classList.add('show');
 }
@@ -2506,7 +2527,12 @@ function showEmailCapture(){
   const already=localStorage.getItem('idenEmail');
   if(already){goApp();return;}
   document.getElementById('email-capture').classList.add('show');
-  setTimeout(()=>document.getElementById('ec-email').focus(),200);
+  // FIX 3: Auto-play demo after short delay for instant aha
+  setTimeout(()=>{
+    const demoBtn=document.getElementById('demo-play-btn');
+    if(demoBtn&&!demoRunning){runDemo();}
+  },600);
+  setTimeout(()=>{if(document.getElementById('ec-email'))document.getElementById('ec-email').focus();},200);
 }
 function startWithEmail(){
   const email=document.getElementById('ec-email').value.trim();
@@ -2624,6 +2650,23 @@ window.addEventListener('load',()=>{
     if(appEl) appEl.classList.add('show');
     document.body.style.overflow='hidden';
 
+    // FIX 1: Handle ?plan= URL param from landing page
+    const urlParams=new URLSearchParams(window.location.search);
+    const planParam=urlParams.get('plan');
+    if(planParam==='agency'){
+      // Auto-show paywall with agency card highlighted
+      setTimeout(()=>{
+        showPaywall();
+        const agencyCard=document.getElementById('pw-buy-agency');
+        if(agencyCard){
+          agencyCard.closest('div[style*="border-radius:12px"]').style.border='1px solid rgba(184,240,0,.5)';
+          agencyCard.scrollIntoView({behavior:'smooth',block:'center'});
+        }
+      },800);
+    } else if(planParam==='pro'){
+      setTimeout(()=>showPaywall(),800);
+    }
+
     // Run all init functions safely
     const safeRun=(fn,name)=>{try{fn();}catch(e){console.warn('[IDEN]',name,'failed:',e.message);}};
 
@@ -2636,6 +2679,16 @@ window.addEventListener('load',()=>{
     },'posts counter');
     safeRun(applyVoiceLockedGlow,'voiceGlow');
     safeRun(initVault,'initVault');
+
+    // FIX 2: Set Brand OS as default active page
+    safeRun(()=>{
+      const defaultPage=document.getElementById('page-brand');
+      if(defaultPage&&!document.querySelector('.page.active')){
+        defaultPage.classList.add('active');
+        const brandBtn=document.querySelector('.nb[onclick*="brand"]');
+        if(brandBtn)brandBtn.classList.add('active');
+      }
+    },'defaultPage');
 
     // FTF after delay
     setTimeout(()=>safeRun(initFirstTimeFlow,'initFirstTimeFlow'),1200);
