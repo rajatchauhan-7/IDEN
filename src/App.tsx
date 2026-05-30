@@ -19,8 +19,11 @@ import {
   Sun,
   Monitor,
   ArrowDown,
+  LogOut,
+  User as UserIcon,
 } from "lucide-react";
-// Firebase auth removed — not needed for IDEN
+import { signInWithPopup, signOut, onAuthStateChanged, User } from "firebase/auth";
+import { auth, googleProvider } from "./firebase";
 import { initScripts } from "./scripts";
 import Chatbot from "./components/Chatbot";
 import FaqSection from "./components/FaqSection";
@@ -51,8 +54,8 @@ function TypewriterText({
                 initial={{ opacity: 0, filter: "blur(4px)", y: 10 }}
                 animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
                 transition={{
-                  duration: 0.8,
-                  delay: delay + currentIdx * 0.05,
+                  duration: 0.35,
+                  delay: delay + currentIdx * 0.022,
                   ease: [0.16, 1, 0.3, 1],
                 }}
                 style={{ display: "inline-block" }}
@@ -129,10 +132,30 @@ export default function App() {
     const saved = localStorage.getItem("theme");
     return (saved as "dark" | "light") || "dark";
   });
+  const [user, setUser] = useState<User | null>(null);
 
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
 
+  const handleLogin = async () => {
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (error) {
+      console.error("Error signing in with Google", error);
+    }
+  };
 
-
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Error signing out", error);
+    }
+  };
 
   useEffect(() => {
     localStorage.setItem("theme", theme);
@@ -313,9 +336,49 @@ export default function App() {
             {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
           </button>
           
-          <a href="/app" className="btn-primary desktop-btn" aria-label="Try IDEN Free">
-            Try Free →
-          </a>
+          {user ? (
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <a href="/app" className="btn-primary desktop-btn">
+                Dashboard
+              </a>
+              <div 
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "36px",
+                  height: "36px",
+                  borderRadius: "50%",
+                  background: "var(--surface)",
+                  border: "1px solid var(--border)",
+                  color: "var(--headline)",
+                  position: "relative",
+                  cursor: "pointer"
+                }}
+                title="Log out"
+                onClick={handleLogout}
+              >
+                {user.photoURL ? (
+                  <img 
+                    src={user.photoURL} 
+                    alt="User Avatar" 
+                    style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }}
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <UserIcon size={18} />
+                )}
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={handleLogin}
+              className="btn-primary desktop-btn"
+              aria-label="Sign in with Google"
+            >
+              Sign In
+            </button>
+          )}
         </div>
         <button
           className="hamburger"
