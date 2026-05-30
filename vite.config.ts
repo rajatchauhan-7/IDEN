@@ -4,23 +4,27 @@ import path from 'path';
 import { defineConfig } from 'vite';
 
 export default defineConfig(() => {
-  return {
-    plugins: [react(), tailwindcss()],
-    resolve: {
-      alias: {
-        '@': path.resolve(__dirname, '.'),
-      },
-    },
-    build: {
-      rollupOptions: {
-        external: [],
-      },
-      commonjsOptions: {
-        transformMixedEsModules: true,
-      },
-    },
-    optimizeDeps: {
-      include: ['react', 'react-dom', 'motion/react', 'recharts', 'lucide-react', 'firebase/app', 'firebase/auth', 'firebase/firestore'],
-    },
-  };
+    return {
+          plugins: [react(), tailwindcss()],
+          resolve: {
+                  alias: {
+                            '@': path.resolve(__dirname, '.'),
+                  },
+          },
+          build: {
+                  rollupOptions: {
+                            input: {
+                                        main: path.resolve(__dirname, 'index.html'),
+                                        app: path.resolve(__dirname, 'app.html'),
+                            },
+                            external: [],
+                  },
+                  commonjsOptions: {
+                            transformMixedEsModules: true,
+                  },
+          },
+          optimizeDeps: {
+                  include: ['react', 'react-dom', 'motion/react', 'recharts', 'lucide-react', 'firebase/app', 'firebase/auth', 'firebase/firestore'],
+          },
+    };
 });
