@@ -5,27 +5,34 @@
 
 export const config = { runtime: 'edge' };
 
-const TRIAL_LIMIT = 5;
+const TRIAL_LIMIT = 10;
 const MODEL = 'claude-sonnet-4-20250514';
-const MAX_TOKENS = 1800;
+const MAX_TOKENS = 2400;
 
 // Simple in-memory rate map (resets on cold start — good enough for MVP)
-// For production: swap this for Vercel KV (one line change)
 const usageMap = new Map();
 
 export default async function handler(req) {
-  // CORS — allow your domain + localhost for dev
   const origin = req.headers.get('origin') || '';
+
+  // ── CORS — allow all your domains ──────────────────────────
   const allowedOrigins = [
-    'https://iden.app',           // your production domain
-    'https://iden-app.vercel.app', // vercel preview
+    'https://useiden.com',
+    'https://www.useiden.com',
+    'https://iden-app.vercel.app',
     'http://localhost:3000',
     'http://localhost:5500',
     'http://127.0.0.1:5500',
+    'http://localhost:8080',
   ];
 
+  // Also allow any *.vercel.app preview deploy
+  const isAllowed = allowedOrigins.includes(origin) || 
+    origin.endsWith('.vercel.app') ||
+    origin === '';
+
   const corsHeaders = {
-    'Access-Control-Allow-Origin': allowedOrigins.includes(origin) ? origin : allowedOrigins[0],
+    'Access-Control-Allow-Origin': isAllowed ? (origin || '*') : allowedOrigins[0],
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, X-License-Key',
   };
