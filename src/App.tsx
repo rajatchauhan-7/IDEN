@@ -1943,7 +1943,7 @@ export default function App() {
                   guarantee
                 </li>
               </ul>
-              <a href="/app?plan=pro" className="btn-primary">
+              <a href="https://payhip.com/b/Xwv2d" target="_blank" className="btn-primary">
                 Get Unlimited Access →
               </a>
             </div>
@@ -1981,7 +1981,8 @@ export default function App() {
                 </li>
               </ul>
               <a
-                href="/app?plan=agency"
+                href="https://payhip.com/b/I1t9q"
+                target="_blank"
                 className="btn-primary"
               >
                 Get Agency Access →
