@@ -5,7 +5,7 @@ import {
   Fingerprint,
   Dna,
   CalendarDays,
-  PenLine,h
+  PenLine,
   Recycle,
   LayoutTemplate,
   Clapperboard,
@@ -17,13 +17,8 @@ import {
   X,
   Moon,
   Sun,
-  Monitor,
   ArrowDown,
-  LogOut,
-  User as UserIcon,
 } from "lucide-react";
-import { signInWithPopup, signOut, onAuthStateChanged, User } from "firebase/auth";
-import { auth, googleProvider } from "./firebase";
 import { initScripts } from "./scripts";
 import Chatbot from "./components/Chatbot";
 import FaqSection from "./components/FaqSection";
@@ -132,31 +127,6 @@ export default function App() {
     const saved = localStorage.getItem("theme");
     return (saved as "dark" | "light") || "dark";
   });
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const handleLogin = async () => {
-    try {
-      await signInWithPopup(auth, googleProvider);
-    } catch (error) {
-      console.error("Error signing in with Google", error);
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error("Error signing out", error);
-    }
-  };
-
   useEffect(() => {
     localStorage.setItem("theme", theme);
 
@@ -336,49 +306,7 @@ export default function App() {
             {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
           </button>
           
-          {user ? (
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <a href="/app" className="btn-primary desktop-btn">
-                Dashboard
-              </a>
-              <div 
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: "36px",
-                  height: "36px",
-                  borderRadius: "50%",
-                  background: "var(--surface)",
-                  border: "1px solid var(--border)",
-                  color: "var(--headline)",
-                  position: "relative",
-                  cursor: "pointer"
-                }}
-                title="Log out"
-                onClick={handleLogout}
-              >
-                {user.photoURL ? (
-                  <img 
-                    src={user.photoURL} 
-                    alt="User Avatar" 
-                    style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }}
-                    referrerPolicy="no-referrer"
-                  />
-                ) : (
-                  <UserIcon size={18} />
-                )}
-              </div>
-            </div>
-          ) : (
-            <button
-              onClick={handleLogin}
-              className="btn-primary desktop-btn"
-              aria-label="Sign in with Google"
-            >
-              Sign In
-            </button>
-          )}
+          <a href="/app" className="btn-primary desktop-btn">Try Free →</a>
         </div>
         <button
           className="hamburger"
@@ -2015,7 +1943,7 @@ export default function App() {
                   guarantee
                 </li>
               </ul>
-              <a href="https://payhip.com/b/I1t9q" target="_blank" className="btn-primary">
+              <a href="/app?plan=pro" className="btn-primary">
                 Get Unlimited Access →
               </a>
             </div>
