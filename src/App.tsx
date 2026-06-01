@@ -5,7 +5,7 @@ import {
   Fingerprint,
   Dna,
   CalendarDays,
-  PenLine,
+  PenLine,h
   Recycle,
   LayoutTemplate,
   Clapperboard,
@@ -2015,7 +2015,7 @@ export default function App() {
                   guarantee
                 </li>
               </ul>
-              <a href="/app" className="btn-primary">
+              <a href="https://payhip.com/b/I1t9q" target="_blank" className="btn-primary">
                 Get Unlimited Access →
               </a>
             </div>
@@ -2053,7 +2053,7 @@ export default function App() {
                 </li>
               </ul>
               <a
-                href="/app"
+                href="/app?plan=agency"
                 className="btn-primary"
               >
                 Get Agency Access →
