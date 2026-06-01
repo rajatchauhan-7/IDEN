@@ -2662,6 +2662,12 @@ window.addEventListener('load',()=>{
           agencyCard.closest('div[style*="border-radius:12px"]').style.border='1px solid rgba(184,240,0,.5)';
           agencyCard.scrollIntoView({behavior:'smooth',block:'center'});
         }
+        // FIX Bug 2: Update upgrade button to redirect directly to agency checkout
+        const upgradeBtn=document.getElementById('us-upgrade');
+        if(upgradeBtn){
+          upgradeBtn.onclick=()=>window.open('https://payhip.com/b/Xwv2d','_blank');
+          upgradeBtn.textContent='Get Agency Plan →';
+        }
       },800);
     } else if(planParam==='pro'){
       setTimeout(()=>showPaywall(),800);
