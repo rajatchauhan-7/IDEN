@@ -5,7 +5,7 @@ import {
   Fingerprint,
   Dna,
   CalendarDays,
-  PenLine,h
+  PenLine,
   Recycle,
   LayoutTemplate,
   Clapperboard,
@@ -124,7 +124,7 @@ const TESTIMONIALS = [
 
 export default function App() {
   const [showScroll, setShowScroll] = useState(false);
-  const [scrollY, setScrollY] = useState(0);
+  const [isScrolledPast50, setIsScrolledPast50] = useState(false); // Optimization: Track boolean thresholds instead of exact pixel values to prevent re-renders on every scroll tick.
   const [showExitModal, setShowExitModal] = useState(false);
   const [scanHovered, setScanHovered] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
@@ -190,12 +190,12 @@ export default function App() {
     initScripts();
 
     const handleScroll = () => {
-      setScrollY(window.scrollY);
-      if (window.scrollY > 300) {
-        setShowScroll(true);
-      } else {
-        setShowScroll(false);
-      }
+      // ⚡ Bolt Optimization: Use state bailout to avoid re-rendering on every scroll event
+      // Instead of storing exact scrollY which changes constantly, we only update booleans when passing thresholds
+      const currentScroll = window.scrollY;
+
+      setIsScrolledPast50(currentScroll > 50);
+      setShowScroll(currentScroll > 300);
     };
     window.addEventListener("scroll", handleScroll);
 
@@ -541,7 +541,7 @@ export default function App() {
             <span>7-day guarantee</span>
           </motion.div>
           <motion.div
-            animate={{ opacity: scrollY > 50 ? 0 : 1 }}
+            animate={{ opacity: isScrolledPast50 ? 0 : 1 }}
             transition={{ duration: 0.3 }}
             style={{
               position: "absolute",

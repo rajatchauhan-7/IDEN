@@ -1,0 +1,3 @@
+## 2024-05-28 - Avoid Exact Scroll Tracking
+**Learning:** React state updates (`setScrollY(window.scrollY)`) tied directly to `window` scroll events will trigger a re-render of the entire component tree on every single pixel scrolled. In large components like `App.tsx`, this severely degrades scrolling performance.
+**Action:** When scroll position is only needed for threshold-based UI changes (like hiding an element past 50px or showing a "scroll to top" button past 300px), use boolean states (`isScrolledPast50`) instead of tracking the exact integer value. This leverages React's state bailout to prevent unnecessary re-renders.
