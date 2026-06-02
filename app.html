@@ -848,6 +848,50 @@ textarea{min-height:80px;resize:vertical}
 /* -- FOCUS VISIBLE (accessibility) --------------------- */
 :focus-visible{outline:2px solid rgba(184,240,0,.5);outline-offset:2px}
 button:focus-visible,a:focus-visible{outline:2px solid rgba(184,240,0,.5);outline-offset:3px}
+
+/* -- Consolidated workspaces CSS extensions -- */
+.foundation-pane {
+  display: none;
+}
+.foundation-pane.active {
+  display: block;
+}
+.studio-pane {
+  display: none;
+}
+.studio-pane.active {
+  display: block;
+}
+.output-panel {
+  display: none;
+}
+.output-panel.active {
+  display: block;
+}
+.output-tabs .tb {
+  flex: 1;
+  text-align: center;
+}
+
+@media (min-width: 900px) {
+  .studio-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+}
+.studio-left, .studio-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.output-card-premium {
+  padding: 24px !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  background: var(--card) !important;
+}
+
 </style>
   <!-- Analytics: Plausible (GDPR compliant, no cookies, free) -->
   <!-- REPLACE 'useiden.com' with your actual domain after adding to Plausible dashboard -->
@@ -855,6 +899,469 @@ button:focus-visible,a:focus-visible{outline:2px solid rgba(184,240,0,.5);outlin
   <!-- Error boundary: catch crashes, show friendly message -->
   <script>
   window.onerror=function(msg,src,line,col,err){
+    console.error('[IDEN]',msg,'@',src,line);
+    // Only show error UI if app hasn't loaded yet
+    if(!document.getElementById('app')?.classList.contains('show')){
+      var el=document.getElementById('app-error');
+      if(!el){
+        el=document.createElement('div');
+        el.id='app-error';
+        el.style.cssText='position:fixed;inset:0;background:#0D0D0D;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;font-family:sans-serif;color:#E8E4DC;text-align:center;padding:24px;z-index:9999';
+        el.innerHTML='<div style="font-size:32px">⚡</div><div style="font-size:18px;font-weight:700">Loading issue</div><div style="font-size:13px;color:#666;max-width:300px;line-height:1.6">Please refresh the page. If this continues, email admin@useiden.com</div><button onclick="location.reload()" style="background:#B8F000;color:#000;border:none;border-radius:8px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px">Refresh</button>';
+        document.body.appendChild(el);
+      }
+    }
+    return false;
+  };
+  </script>
+</head>
+<body>
+<div class="toast" id="toast">Copied</div>
+
+<!-- ═══════ HISTORY PANEL ═══════ -->
+<div class="history-overlay" id="hist-overlay" onclick="closeHistory()"></div>
+<div class="history-panel" id="history-panel">
+  <div class="history-head">
+    <div class="history-title">Generation History</div>
+    <button class="history-close" onclick="closeHistory()">×</button>
+  </div>
+  <div class="history-list" id="history-list">
+    <div class="history-empty" id="history-empty">Your outputs appear here after each generation.<br/><span style="color:var(--lime);font-size:11px;margin-top:6px;display:block">Start with Brand OS to build your foundation.</span></div>
+  </div>
+</div>
+
+<!-- ═══════ FIRST-TIME FLOW ═══════ -->
+<div id="ftf-overlay">
+<div class="ftf-modal">
+  <div class="ftf-step active" id="ftf-1">
+    <div class="ftf-num">STEP 1 OF 2</div>
+    <div class="ftf-title">Build Your<br/>Brand First.</div>
+    <div class="ftf-desc">Every tool in IDEN writes better when it knows who you are.<br/>Brand OS takes 2 minutes. It is the foundation that makes everything else work.</div>
+    <div style="background:rgba(184,240,0,.06);border:1px solid rgba(184,240,0,.15);border-radius:10px;padding:12px;text-align:left;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.7">
+      <strong style="color:var(--lime)">What Brand OS gives you:</strong><br/>
+      Your exact positioning · 3 content pillars · Voice guidelines · LinkedIn headline · 30-day plan
+    </div>
+    <button class="btn bl" style="width:100%;justify-content:center;padding:13px;font-size:14px" onclick="ftfGoToBrandOS()">Build My Brand OS →</button>
+    <button onclick="ftfSkip()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;margin-top:12px;font-family:sans-serif">Skip for now: I'll explore the app</button>
+  </div>
+  <div class="ftf-step" id="ftf-2">
+    <div class="ftf-num">STEP 2 OF 2</div>
+    <div class="ftf-title">Lock Your<br/>Voice.</div>
+    <div class="ftf-desc">Paste 3 of your best LinkedIn posts. IDEN extracts your writing fingerprint and locks it. Every tool then writes exactly like you: automatically, forever.</div>
+    <div style="font-size:11px;color:var(--muted);background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:12px;line-height:1.7"><strong style="color:var(--ivory)">No posts yet?</strong> That's fine. Use Brand OS first, then come back here once you've written your first 2-3 posts. Your voice lock gets stronger the more you've written.</div>
+    <div style="background:rgba(184,240,0,.06);border:1px solid rgba(184,240,0,.15);border-radius:10px;padding:12px;text-align:left;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.7">
+      <strong style="color:var(--lime)">Without Voice Lock:</strong> good output, sounds generic.<br/>
+      <strong style="color:var(--lime)">With Voice Lock:</strong> every post sounds unmistakably like you.
+    </div>
+    <button class="btn bl" style="width:100%;justify-content:center;padding:13px;font-size:14px" onclick="ftfGoToVoice()">Set My Voice Lock →</button>
+    <button onclick="ftfSkip()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;margin-top:12px;font-family:sans-serif">Skip: start exploring the tools</button>
+  </div>
+  <div class="ftf-progress">
+    <div class="ftf-dot active" id="ftf-dot-1"></div>
+    <div class="ftf-dot" id="ftf-dot-2"></div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════ MOBILE BOTTOM NAV ═══════ -->
+<nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+  <div class="mbn-inner">
+    <button class="mbn-btn active" onclick="nav('home',null);mbnActive(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span>Home</span>
+    </button>
+    <button class="mbn-btn" onclick="nav('foundation',null);mbnActive(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/></svg>
+      <span>DNA</span>
+    </button>
+    <button class="mbn-btn" onclick="nav('studio',null);mbnActive(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      <span>Studio</span>
+    </button>
+    <button class="mbn-btn" onclick="nav('carousel',null);mbnActive(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M17 2H7"/></svg>
+      <span>Carousel</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ═══════ EMAIL CAPTURE ═══════ -->
+<div id="email-capture">
+<div class="ec-modal" id="ec-demo-screen">
+
+  <!-- DEMO SCREEN (shown first) -->
+  <div id="ec-step-demo" style="display:block">
+    <div style="text-align:center;margin-bottom:18px">
+      <div style="font-size:11px;font-weight:700;color:var(--lime);letter-spacing:2px;margin-bottom:8px">LIVE DEMO</div>
+      <div style="font-size:20px;font-weight:800;color:var(--ivory);line-height:1.3;margin-bottom:8px">Watch IDEN write a LinkedIn post<br/>in your exact voice.</div>
+      <div style="font-size:12px;color:var(--muted)">No signup needed to see this.</div>
+    </div>
+
+    <!-- Sample topic pill -->
+    <div style="background:rgba(184,240,0,.06);border:1px solid rgba(184,240,0,.2);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--muted);line-height:1.6">
+      <span style="color:var(--lime);font-weight:700">Topic:</span> "The biggest mistake founders make with their LinkedIn presence"
+    </div>
+
+    <!-- Typewriter output box -->
+    <div style="background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;min-height:120px;font-size:13px;color:var(--ivory);line-height:1.8;margin-bottom:14px;text-align:left;font-family:sans-serif" id="demo-output">
+      <span style="color:var(--muted);font-size:12px">Tap the button to see IDEN write live ↓</span>
+    </div>
+
+    <button class="btn bl" style="width:100%;justify-content:center;padding:13px;font-size:14px" id="demo-play-btn" onclick="runDemo()">
+      ▶ See It Write Live →
+    </button>
+
+    <!-- After demo plays, show this CTA -->
+    <div id="demo-cta" style="display:none;margin-top:14px;text-align:center">
+      <div style="font-size:13px;color:var(--ivory);font-weight:700;margin-bottom:4px">That was generated in 8 seconds.</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:14px">With your voice locked, every post sounds like <em>you</em> — not AI.</div>
+      <button class="btn bl" style="width:100%;justify-content:center;padding:13px;font-size:14px" onclick="showEmailStep()">
+        Get My 10 Free Generations →
+      </button>
+      <button onclick="skipEmail()" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;margin-top:10px;font-family:sans-serif;text-decoration:underline">Skip — just explore the app</button>
+    </div>
+    <div id="demo-skip-early" style="text-align:center;margin-top:10px">
+      <button onclick="skipEmail()" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:sans-serif">Skip demo, explore the app</button>
+    </div>
+  </div>
+
+  <!-- EMAIL STEP (shown after demo) -->
+  <div id="ec-step-email" style="display:none">
+    <div class="ec-icon">🧬</div>
+    <div class="ec-title">Your 10 Free Generations</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.6">Save your progress, unlock all 10 tools, and get a voice setup guide — free.</p>
+    <input class="ec-input" type="email" id="ec-email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')startWithEmail()"/>
+    <button class="btn bl" style="width:100%;justify-content:center;padding:13px" onclick="startWithEmail()">Start Free →</button>
+    <div style="display:flex;align-items:flex-start;gap:8px;margin-top:12px;text-align:left">
+      <input type="checkbox" id="ec-consent" style="width:14px;height:14px;flex-shrink:0;margin-top:2px;accent-color:var(--lime);cursor:pointer"/>
+      <label for="ec-consent" style="font-size:11px;color:var(--muted);line-height:1.6;cursor:pointer;font-family:sans-serif">I agree to the <a href="/terms" target="_blank" style="color:var(--lime);text-decoration:none">Terms of Service</a> and <a href="/privacy" target="_blank" style="color:var(--lime);text-decoration:none">Privacy Policy</a>. No spam.</label>
+    </div>
+    <button onclick="skipEmail()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;margin-top:12px;font-family:sans-serif;display:block;width:100%;text-align:center">Skip for now</button>
+    <p style="font-size:10px;color:var(--muted);margin-top:12px;line-height:1.6;text-align:center">No spam. No card. No account needed.</p>
+  </div>
+
+</div>
+</div>
+</div>
+
+<!-- ═══════ PAYWALL MODAL ═══════ -->
+<div id="paywall">
+<div class="pw-modal" style="max-width:600px">
+
+  <!-- Back button -->
+  <div style="text-align:left;margin-bottom:16px">
+    <button onclick="hidePaywall()" style="background:none;border:none;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:sans-serif;display:flex;align-items:center;gap:5px;padding:0;transition:color .15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Back to Dashboard
+    </button>
+  </div>
+
+  <!-- Header -->
+  <div style="text-align:center;margin-bottom:20px">
+    <div class="pw-icon">⚡</div>
+    <div class="pw-title">You've Hit the Limit</div>
+    <p class="pw-sub" style="margin-bottom:6px">10 free generations used. Here's the good news:</p>
+    <p style="font-size:13px;color:var(--lime);font-weight:700;margin-bottom:12px">$49 once. Not $49/month. Not $49/year. Once. Forever.</p>
+    <!-- Testimonial — update with real quote when available -->
+    <div style="background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 14px;text-align:left;margin-bottom:4px">
+      <div style="font-size:12px;color:var(--text);line-height:1.65;font-family:sans-serif;font-style:italic">"The Brand OS alone is worth $49. I paid a consultant $500 for less detailed work. It told me exactly what I was doing wrong."</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:8px;font-family:sans-serif">Samir K. · B2B SaaS Founder · ★★★★★</div>
+    </div>
+  </div>
+
+  <!-- Value recap before price -->
+  <div style="background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:16px">
+    <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--lime);margin-bottom:10px;text-transform:uppercase">What you're unlocking</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      <div style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px"><span style="color:var(--lime)">✓</span> Unlimited generations</div>
+      <div style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px"><span style="color:var(--lime)">✓</span> Voice DNA Lock: permanent</div>
+      <div style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px"><span style="color:var(--lime)">✓</span> All 10 tools forever</div>
+      <div style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px"><span style="color:var(--lime)">✓</span> Carousel PDF download</div>
+      <div style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px"><span style="color:var(--lime)">✓</span> Brand OS: full system</div>
+      <div style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px"><span style="color:var(--lime)">✓</span> 7-day money-back guarantee</div>
+    </div>
+  </div>
+
+  <!-- Pricing cards -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+
+    <!-- Pro $49 -->
+    <div style="background:rgba(184,240,0,.06);border:1px solid rgba(184,240,0,.35);border-radius:12px;padding:18px;position:relative">
+      <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--lime);color:#000;font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:3px 10px;border-radius:20px;white-space:nowrap">Most Popular</div>
+      <div style="font-family:sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;margin-top:4px">Professional</div>
+      <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:2px">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:2px;color:var(--lime);line-height:1">$49</div>
+        <div style="font-size:11px;color:var(--muted)">once</div>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:14px">For your personal brand</div>
+      <a href="https://payhip.com/b/Xwv2d" target="_blank" id="pw-buy-pro" style="display:block;background:var(--lime);color:#000;padding:11px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;text-align:center;transition:all .15s" onmouseover="this.style.background='#a8e000'" onmouseout="this.style.background='var(--lime)'">Unlock Unlimited →</a>
+    </div>
+
+    <!-- Agency $149 -->
+    <div style="background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;position:relative">
+      <div style="font-family:sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;margin-top:4px">Agency</div>
+      <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:2px">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:2px;color:var(--ivory);line-height:1">$149</div>
+        <div style="font-size:11px;color:var(--muted)">once</div>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:14px">Up to 25 client voices + white-label</div>
+      <a href="https://payhip.com/b/I1t9q" target="_blank" id="pw-buy-agency" style="display:block;background:var(--surface);color:var(--text);padding:11px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;text-align:center;border:1px solid var(--muted);transition:all .15s" onmouseover="this.style.borderColor='var(--lime)';this.style.color='var(--lime)'" onmouseout="this.style.borderColor='var(--muted)';this.style.color='var(--text)'">Get Agency →</a>
+    </div>
+  </div>
+
+  <!-- Guarantee + objection handling -->
+  <div style="background:rgba(184,240,0,.04);border:1px solid rgba(184,240,0,.12);border-radius:8px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:flex-start;gap:10px">
+    <div style="font-size:20px;flex-shrink:0">🛡️</div>
+    <div>
+      <div style="font-size:12px;font-weight:700;color:var(--lime);margin-bottom:3px">7-day money-back guarantee</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.6">If IDEN doesn't deliver what we promise, email us within 7 days for a full refund. No questions. We're confident enough to stand behind it.</div>
+    </div>
+  </div>
+
+  <!-- Quick objection busters -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
+    <div style="text-align:center;font-size:10px;color:var(--muted);line-height:1.5"><span style="display:block;font-size:16px;margin-bottom:4px">🔒</span>Zero LinkedIn<br/>account risk</div>
+    <div style="text-align:center;font-size:10px;color:var(--muted);line-height:1.5"><span style="display:block;font-size:16px;margin-bottom:4px">⚡</span>Licence key<br/>in minutes</div>
+    <div style="text-align:center;font-size:10px;color:var(--muted);line-height:1.5"><span style="display:block;font-size:16px;margin-bottom:4px">♾️</span>No monthly fees.<br/>Ever.</div>
+  </div>
+
+  <!-- Licence key entry -->
+  <div class="pw-divider"><div class="pw-divider-line"></div><div class="pw-divider-text">Already purchased?</div><div class="pw-divider-line"></div></div>
+  <div class="pw-key-row" style="margin-top:12px">
+    <input class="pw-key-input" type="text" id="pw-license" placeholder="IDEN-XXXX-XXXX-XXXX"/>
+    <button class="btn bl" onclick="activateLicense()">Activate</button>
+  </div>
+  <div id="pw-key-err" style="font-size:11px;color:var(--red);margin-top:6px;display:none">Invalid key. Check your purchase email or contact admin@useiden.com</div>
+  <p class="pw-note" style="margin-top:8px">Enter your key above to activate instantly.</p>
+</div>
+</div>
+
+
+<!-- ═══════ APP ═══════ -->
+<div id="app">
+<aside class="sidebar">
+  <div class="logo-wrap"><div class="logo" onclick="showLP()">ID<span>E</span>N</div><div class="logo-sub">Personal Brand OS</div></div>
+  <nav class="nav">
+    <button class="nb active" onclick="nav('home',this)" id="sidebar-home-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>Home</span></button>
+
+    <div class="ngl" style="color:var(--lime)">Profile Setup</div>
+    <button class="nb" onclick="nav('foundation',this)" id="sidebar-foundation-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/></svg><span>DNA & Strategy</span><span class="nb-lock-status" id="sidebar-lock-status" style="margin-left:auto;"></span></button>
+
+    <div class="ngl" style="margin-top:6px">Content Engine</div>
+    <button class="nb" onclick="nav('studio',this)" id="sidebar-studio-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg><span>Creator Studio</span></button>
+    <button class="nb" onclick="nav('carousel',this)" id="sidebar-carousel-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M17 2H7"/></svg><span>Carousel PDF</span></button>
+
+    <!-- AGENCY — only visible to Agency plan users -->
+    <div id="agency-sidebar-section" style="display:none">
+      <div class="ngl" style="margin-top:6px;color:var(--amber)">Agency</div>
+      <button class="nb" onclick="nav('vault',this)" id="sidebar-vault-btn" style="border-left:2px solid rgba(245,158,11,.4);margin-left:-2px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>Client Vault</span><span style="font-size:8px;background:rgba(245,158,11,.15);color:var(--amber);padding:2px 5px;border-radius:3px;font-weight:700;margin-left:auto;font-family:sans-serif">AGENCY</span></button>
+    </div>
+  </nav>
+  
+  <div class="user-status">
+    <div class="us-plan">Your Plan</div>
+    <div class="us-row">
+      <div class="us-info trial" id="us-info">Free Trial</div>
+      <button class="us-upgrade" id="us-upgrade" onclick="showPaywall()">Upgrade →</button>
+    </div>
+    <div id="us-dots" style="margin-top:8px;display:flex;gap:4px"></div>
+  </div>
+  <div style="padding:10px 16px;border-top:1px solid var(--line);text-align:center">
+    <a href="mailto:admin@useiden.com" style="font-size:10px;color:var(--muted);text-decoration:none;font-family:sans-serif;transition:color .15s;display:block" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">Built by Rajat · admin@useiden.com</a>
+  </div>
+</aside>
+<div class="main">
+  <!-- trial bar -->
+  <div class="trial-bar" id="trial-bar">
+    <div class="trial-text" id="trial-text"><strong>10</strong> free generations remaining</div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="trial-dots" id="trial-dots"></div>
+      <button class="btn bl bs" onclick="showPaywall()">Unlock Unlimited / $49</button>
+    </div>
+  </div>
+  <div class="topbar">
+    <div><div class="pt" id="pT">HOME</div><div class="pd" id="pD">Your Personal Brand Operating System</div></div>
+    <div class="tbr">
+      <button onclick="openHistory()" style="background:none;border:1px solid var(--line);border-radius:6px;color:var(--muted);font-size:11px;font-weight:600;padding:5px 10px;cursor:pointer;font-family:sans-serif;display:flex;align-items:center;gap:5px;transition:all .15s" onmouseover="this.style.borderColor='var(--muted)'" onmouseout="this.style.borderColor='var(--line)'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:12px;height:12px"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+        History
+      </button>
+      <span class="tag tl" id="vlTag">No Voice Lock</span>
+      <button class="btn bg bs" onclick="openHistory()" title="View generation history" style="display:flex;align-items:center;gap:5px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>History</button>
+    </div>
+  </div>
+  
+  <div class="ca">
+    <!-- HOME -->
+    <div class="page active" id="page-home">
+      <div class="sr">
+        <div class="st"><div class="sv lime">10</div><div class="sl">Tools</div></div>
+        <div class="st"><div class="sv lime" id="home-gens">10</div><div class="sl">Generations Left</div></div>
+        <div class="st"><div class="sv lime" id="home-vl" style="font-size:13px">Not Set</div><div class="sl">Voice Lock</div></div>
+        <div class="st"><div class="sv" id="home-posts">0</div><div class="sl">Posts Created</div></div>
+      </div>
+      <div id="vl-home-banner" class="vl-banner">
+        <div class="vl-text"><strong>Voice Lock not set.</strong> Run Voice DNA → lock your voice → every tool writes in your exact style automatically.</div>
+        <button class="btn bl bs" onclick="nTo('voice')">Set Voice Lock →</button>
+      </div>
+      <div class="sep"><div class="sep-l"></div><div class="sep-t">Your workflow</div><div class="sep-l"></div></div>
+      <div class="hg">
+        <div class="hc" onclick="nTo('brand')" data-step="1" style="border-left:2px solid var(--lime)"><div class="hci" style="background:rgba(184,240,0,.1)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--lime)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/></svg></div><h3>1. Brand OS</h3><p>Start here. Build your complete brand system: positioning, pillars, voice, 30-day plan.</p></div>
+        <div class="hc" onclick="nTo('identity')" data-step="2" style="border-left:2px solid rgba(184,240,0,.4)"><div class="hci"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div><h3>2. Identity Engine</h3><p>Understand your current identity: or discover it from scratch if you're starting fresh.</p></div>
+        <div class="hc" onclick="nTo('voice')" data-step="3" style="border-left:2px solid rgba(184,240,0,.4)"><div class="hci"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg></div><h3>3. Voice DNA</h3><p>Lock your writing fingerprint. Every tool then writes exactly like you: forever.</p></div>
+        <div class="hc" onclick="nTo('planner')" data-step="4"><div class="hci"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><h3>4. Weekly Planner</h3><p>5 post ideas with hooks, formats, and best days: from your brand pillars.</p></div>
+        <div class="hc" onclick="nTo('post')" data-step="5"><div class="hci"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div><h3>5. Post Studio</h3><p>8 formats. Voice Lock auto-applied. Hook zone, body zone, CTA zone: all structured.</p></div>
+        <div class="hc" onclick="nTo('viral')" data-step="6"><div class="hci"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div><h3>6. Reach Scorer</h3><p>Score before you post. Rewrites your hook and CTA. Best time to post included.</p></div>
+      </div>
+    </div>
+    
+    
+    <!-- DNA & STRATEGY (Consolidated Workspace) -->
+    <div class="page" id="page-foundation">
+      <div class="id-tabs" style="margin-bottom: 20px;">
+        <button class="id-tab active" id="tab-btn-identity" onclick="switchFoundationTab('identity',this)">1. Profile Scanner</button>
+        <button class="id-tab" id="tab-btn-voice" onclick="switchFoundationTab('voice',this)">2. Voice DNA Lock</button>
+        <button class="id-tab" id="tab-btn-brand" onclick="switchFoundationTab('brand',this)">3. Brand OS Positioning</button>
+      </div>
+
+      <!-- Tab Content Pane 1: Profile Scanner (Identity) -->
+      <div class="foundation-pane active" id="fdnp-identity">
+        <div class="card">
+        <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>IDENTITY ENGINE</div>
+        <div class="id-tabs">
+          <button class="id-tab active" onclick="switchIdTab('my-profile',this)">My Profile</button>
+          <button class="id-tab" onclick="switchIdTab('discover',this)">Discover My Identity</button>
+          <button class="id-tab" onclick="switchIdTab('study',this)">Profile Analyzer</button>
+        </div>
+
+        <!-- TAB 1: MY PROFILE -->
+        <div class="id-pane active" id="idp-my-profile">
+          <div class="notice" style="margin-bottom:14px">Paste your own LinkedIn content and get a brutally honest brand analysis: what you stand for, where your gaps are, and exactly what to fix.</div>
+          <div class="field">
+            <label>Your Headline</label>
+            <input id="id-mine-headline" placeholder="e.g. Founder of IDEN | Helping founders stop sounding like AI"/>
+          </div>
+          <div class="field">
+            <label>Your About Section</label>
+            <textarea id="id-mine-about" rows="4" placeholder="Paste your full LinkedIn About section here..."></textarea>
+          </div>
+          <div class="field">
+            <label>Your Recent Posts <span style="font-size:10px;color:var(--muted)">(paste 2–3 posts, separated by a blank line)</span></label>
+            <textarea id="id-mine-posts" rows="6" placeholder="POST 1: [paste your best recent post]&#10;&#10;POST 2: [paste another post]&#10;&#10;POST 3: [paste another post]"></textarea>
+          </div>
+          <div class="br">
+            <button class="btn bl" id="id-btn" onclick="rId('mine')">Analyse My LinkedIn Identity →</button>
+          </div>
+          <div id="id-ow" style="display:none">
+            <div style="background:rgba(184,240,0,.06);border:1px solid rgba(184,240,0,.2);border-radius:8px;padding:12px 14px;margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:10px" id="id-brand-cta"><div style="font-size:12px;color:var(--lime);font-weight:700">Your gaps are identified. Fix them now.</div><button class="btn bl bs" onclick="sendIdToBrandOS()">Build Brand OS →</button></div><div class="oh"><div class="ol">Your Identity Analysis</div><div class="oa"><button class="btn bg bs" onclick="exTxt('id-o','identity-analysis')">Export</button><button class="btn bg bs" onclick="cp('id-o')">Copy</button></div></div>
+            <div class="output" id="id-o"></div>
+            <div class="ai-disclaimer">AI analysis based on content provided. Accuracy improves with more content pasted.</div>
+          </div>
+        </div>
+
+        <!-- TAB 2: DISCOVER MY IDENTITY -->
+        <div class="id-pane" id="idp-discover">
+          <div class="notice" style="margin-bottom:14px">New to LinkedIn or feeling unclear about your brand? Answer 5 questions. IDEN will construct your complete identity from scratch: no existing posts needed.</div>
+          <div class="field"><label>1. What have you actually built, done, or figured out?</label><textarea id="did-q1" rows="2" placeholder="Be specific. Not 'led teams'. say what you built, what broke, what you fixed. Numbers help. E.g. 'Grew a 6-person agency to 40 people. Lost a $200K client in month 3: rebuilt the entire delivery model after that.'"></textarea></div>
+          <div class="field"><label>2. Who do you help and what is their exact problem?</label><textarea id="did-q2" rows="2" placeholder="Name them precisely. Not 'entrepreneurs'. say 'first-time SaaS founders who are pre-revenue and stuck on positioning.'"></textarea></div>
+          <div class="field"><label>3. What do you believe that most people in your field get wrong?</label><textarea id="did-q3" rows="2" placeholder="Your genuine contrarian view. This is the heart of your brand. If your answer feels safe or comfortable, go deeper."></textarea></div>
+          <div class="field"><label>4. What result have you produced that you're most proud of?</label><textarea id="did-q4" rows="2" placeholder="Specific outcome. 'Helped a founder go from 0 to 1,200 LinkedIn followers in 90 days using just 3 posts per week.'"></textarea></div>
+          <div class="field"><label>5. Where do you want to be known in 2 years?</label><textarea id="did-q5" rows="2" placeholder="What do you want people to say about you? What inbound opportunities do you want? Be specific about the outcome."></textarea></div>
+          <div class="br"><button class="btn bl" id="did-btn" onclick="rId('discover')">Build My Identity From Scratch →</button></div>
+          <div id="did-ow" style="display:none">
+            <div class="oh"><div class="ol">Your Discovered Identity</div><div class="oa"><button class="btn bg bs" onclick="exTxt('did-o','discovered-identity')">Export</button><button class="btn bg bs" onclick="cp('did-o')">Copy</button><button class="btn bl bs" onclick="sendIdToBrandOS()">→ Prefill Brand OS</button></div></div>
+            <div class="output" id="did-o"></div>
+            <div class="ai-disclaimer">AI-generated brand identity. Refine over time as you post and see what resonates.</div>
+          </div>
+        </div>
+
+        <!-- TAB 3: STUDY ANY PROFILE -->
+        <div class="id-pane" id="idp-study">
+          <div class="notice" style="margin-bottom:14px">Analyse any LinkedIn profile — competitor, creator, or client. Extract their positioning, voice, and brand strategy so you know exactly what's working and what to learn from.</div>
+
+          <!-- Step-by-step instructions -->
+          <div style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:18px">
+            <div style="font-size:11px;font-weight:700;color:var(--lime);letter-spacing:2px;margin-bottom:12px">HOW TO USE</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;gap:12px;align-items:flex-start">
+                <div style="min-width:24px;height:24px;background:var(--lime);color:#000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">1</div>
+                <div style="font-size:12px;color:var(--text);line-height:1.6">Go to any LinkedIn profile in your browser</div>
+              </div>
+              <div style="display:flex;gap:12px;align-items:flex-start">
+                <div style="min-width:24px;height:24px;background:var(--lime);color:#000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">2</div>
+                <div style="font-size:12px;color:var(--text);line-height:1.6">Copy their <strong style="color:var(--ivory)">headline</strong>, <strong style="color:var(--ivory)">About section</strong>, and <strong style="color:var(--ivory)">2–3 recent posts</strong></div>
+              </div>
+              <div style="display:flex;gap:12px;align-items:flex-start">
+                <div style="min-width:24px;height:24px;background:var(--lime);color:#000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">3</div>
+                <div style="font-size:12px;color:var(--text);line-height:1.6">Paste everything into the field below and click Analyse</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Profile Label <span style="color:var(--muted);font-weight:400">(optional — just for reference)</span></label>
+            <input id="id-u-other" placeholder="e.g. Justin Welsh — helps label the analysis output"/>
+          </div>
+          <div class="field">
+            <label>Their Headline</label>
+            <input id="id-other-headline" placeholder="Paste their LinkedIn headline here"/>
+          </div>
+          <div class="field">
+            <label>Their About Section</label>
+            <textarea id="id-other-about" rows="4" placeholder="Paste their full LinkedIn About section here..."></textarea>
+          </div>
+          <div class="field">
+            <label>Their Recent Posts <span style="font-size:10px;color:var(--muted)">(paste 2–3 posts, separated by a blank line)</span></label>
+            <textarea id="id-other-posts" rows="6" placeholder="POST 1: [paste their best performing post]&#10;&#10;POST 2: [paste another post]&#10;&#10;POST 3: [paste another post]"></textarea>
+          </div>
+
+          <div class="br"><button class="btn bl" id="ido-btn" onclick="rId('study')">Analyse This Profile →</button></div>
+          <div id="ido-ow" style="display:none">
+            <div class="oh"><div class="ol">Profile Analysis</div><div class="oa"><button class="btn bg bs" onclick="exTxt('ido-o','profile-analysis')">Export</button><button class="btn bg bs" onclick="cp('ido-o')">Copy</button></div></div>
+            <div class="output" id="ido-o"></div>
+            <div class="ai-disclaimer">Strategic analysis only. Use to learn and improve — not to copy their content.</div>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <!-- Tab Content Pane 2: Voice DNA Lock (Voice) -->
+      <div class="foundation-pane" id="fdnp-voice">
+        <div class="card">
+        <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>VOICE DNA: CAPTURE YOUR WRITING VOICE</div>
+        <div id="vl-voice-status"></div>
+        <div class="notice" style="margin-bottom:14px">Paste 3–5 of your best LinkedIn posts. IDEN extracts your exact writing fingerprint: sentence rhythm, vocabulary, hook style, personality. Locked once. Auto-applied to every tool forever.</div>
+        <div class="field">
+          <label>Your Topic Area <span style="font-size:10px;color:var(--muted)">(optional, helps calibrate vocabulary)</span></label>
+          <input id="v-i" placeholder="e.g. B2B sales, startup building, leadership, product growth…"/>
+        </div>
+        <div class="field">
+          <label>Paste 3–5 of Your Best Posts</label>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px;line-height:1.6">Use posts you wrote yourself: not AI-generated ones. The more personality-rich, the better. Posts that felt authentic and got good responses work best.</div>
+          <textarea id="v-p" rows="9" placeholder="POST 1:&#10;[paste your best post here]&#10;&#10;POST 2:&#10;[paste another post]&#10;&#10;POST 3:&#10;[paste another post]"></textarea>
+        </div>
+        <div class="br">
+          <button class="btn bl" id="v-btn" onclick="rVoice()">Extract Voice DNA</button>
+          <button class="btn bg" id="v-lock-btn" onclick="lockVoice()" style="display:none">🔒 Lock This Voice</button>
+          <button class="btn bg bs" onclick="clearVoiceLock()" id="v-clear-btn" style="display:none">Clear Lock</button>
+        </div>
+        <div id="v-ow" style="display:none">
+          <div class="oh">
+            <div class="ol">Voice DNA Profile</div>
+            <div class="oa">
+              <button class="btn bg bs" onclick="exTxt('v-o','voice-dna')">Export</button>
+              <button class="btn bg bs" onclick="cp('v-o')">Copy</button>
+            </div>
+          </div>
+          <div class="output" id="v-o"></div>
+          <div class="ai-disclaimer">Lock your voice after reviewing. Every tool will automatically apply this profile going forward.</div>
+        </div>
+      </div>
+      </div>
+
+      <!-- Tab Content Pane 3: Brand OS Positioning (Brand) -->
+      <div class="foundation-pane" id="fdnp-brand">
+        window.onerror=function(msg,src,line,col,err){
     console.error('[IDEN]',msg,'@',src,line);
     // Only show error UI if app hasn't loaded yet
     if(!document.getElementById('app')?.classList.contains('show')){
@@ -1415,6 +1922,7 @@ button:focus-visible,a:focus-visible{outline:2px solid rgba(184,240,0,.5);outlin
             <button class="btn bg bs" onclick="cpZone('body')">Copy Post</button>
             <button class="btn bg bs" onclick="cpZone('full')">Copy All</button>
             <button class="btn bg bs" onclick="exTxt('p-o','linkedin-post')">Export</button>
+            <button class="btn bg bs" onclick="commentOnThisPost()" title="Write Comments">Write Comments →</button>
             <button class="btn bl bs" onclick="scoreThisPost()" title="Send to Reach Scorer">Score This →</button>
           </div>
           <div class="ai-disclaimer">AI-generated. Review and personalise before posting. Results vary by profile and audience.</div>
@@ -1694,81 +2202,450 @@ button:focus-visible,a:focus-visible{outline:2px solid rgba(184,240,0,.5);outlin
         </div>
         <div id="vault-list" style="display:flex;flex-direction:column;gap:8px"></div>
       </div>
+      </div>
     </div>
 
-    <!-- BRAND OS -->
-    <div class="page" id="page-brand">
-      <div class="notice" style="margin-bottom:12px">Build your complete personal brand system before writing a single post. This is the foundation everything else runs on. The more specific your inputs, the more specific the output.</div>
-      <div class="card">
-        <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/></svg>BUILD YOUR BRAND OS</div>
+    
+    
+    <!-- CREATOR STUDIO (Consolidated Workspace) -->
+    <div class="page" id="page-studio">
+      <div class="creator-studio-header" style="margin-bottom: 20px;">
+        <div class="id-tabs" style="overflow-x: auto; scrollbar-width: none;">
+          <button class="id-tab active" id="tab-btn-post" onclick="switchStudioTab('post',this)">Post Writer</button>
+          <button class="id-tab" id="tab-btn-planner" onclick="switchStudioTab('planner',this)">Weekly Ideas</button>
+          <button class="id-tab" id="tab-btn-repurpose" onclick="switchStudioTab('repurpose',this)">Repurpose Tool</button>
+          <button class="id-tab" id="tab-btn-video" onclick="switchStudioTab('video',this)">Video Script</button>
+          <button class="id-tab" id="tab-btn-viral" onclick="switchStudioTab('viral',this)">Reach Scorer</button>
+          <button class="id-tab" id="tab-btn-comment" onclick="switchStudioTab('comment',this)">Comment Studio</button>
+        </div>
+      </div>
 
-        <div style="background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.7">
-          <strong style="color:var(--lime)">How to fill this in:</strong> Be specific about your background: not just your job title, but what you have actually done, built, or figured out. The more concrete your inputs, the less generic the output. Vague in = vague out.
+      <div class="studio-layout">
+        <!-- LEFT COLUMN: Inputs -->
+        <div class="studio-left">
+          <div class="studio-pane active" id="studiop-post">
+            <div class="card">
+        <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>POST STUDIO</div>
+        <div class="notice" style="margin-bottom:12px">8 formats calibrated to LinkedIn's 2026 algorithm. Voice Lock auto-applied. First comment generated automatically.</div>
+
+        <!-- Format tabs: row 1 -->
+        <div style="margin-bottom:4px">
+          <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-family:sans-serif">Core Formats</div>
+          <div class="tabs" style="flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch">
+            <button class="tb active" onclick="sTab('single',this)">Single Post</button>
+            <button class="tb" onclick="sTab('thread',this)">Real Thread</button>
+            <button class="tb" onclick="sTab('story',this)">Story Post</button>
+            <button class="tb" onclick="sTab('data',this)">Data Post</button>
+            <button class="tb" onclick="sTab('newsletter',this)">Newsletter</button>
+          </div>
+        </div>
+        <!-- Format tabs: row 2 -->
+        <div style="margin-bottom:16px">
+          <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-family:sans-serif">Viral Formats</div>
+          <div class="tabs" style="flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch">
+            <button class="tb" onclick="sTab('contrarian',this)">Contrarian Take</button>
+            <button class="tb" onclick="sTab('lessons',this)">Lessons Learned</button>
+            <button class="tb" onclick="sTab('casestudy',this)">Case Study</button>
+            <button class="tb" onclick="sTab('hottake',this)">Hot Take</button>
+          </div>
         </div>
 
+        <input type="hidden" id="pt" value="single"/>
+
+        <!-- Format hint: updates dynamically -->
+        <div id="format-hint" style="background:rgba(184,240,0,.05);border:1px solid rgba(184,240,0,.12);border-radius:6px;padding:8px 12px;margin-bottom:14px;font-size:11px;color:var(--muted);line-height:1.6">
+          <strong style="color:var(--lime)">Single Post:</strong> 150–250 words. Strong hook under 210 chars. Problem → insight → specific question. The everyday workhorse format.
+        </div>
+
+        <div class="field"><label>Topic / Core Insight <span style="font-size:10px;color:var(--muted)">(the more specific, the better the output)</span></label>
+          <input id="p-t" placeholder="e.g. Most founders scale too fast because they confuse revenue with product-market fit"/>
+        </div>
+        <div class="g2">
+          <div class="field"><label>Target Audience</label><input id="p-a" placeholder="Early-stage founders, B2B CMOs…"/></div>
+          <div class="field"><label>Tone</label>
+            <select id="p-tn">
+              <option value="authoritative">Authoritative</option>
+              <option value="vulnerable">Vulnerable / Personal</option>
+              <option value="educational">Educational</option>
+              <option value="provocative">Provocative / Contrarian</option>
+              <option value="storytelling">Storytelling</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label>Voice <span style="font-size:9px;color:var(--lime)" id="post-vl-tag"></span></label>
+          <textarea id="p-v" rows="2" placeholder="Leave blank to auto-use Voice Lock (if set)…"></textarea>
+        </div>
+        <div class="br">
+          <button class="btn bl" id="p-btn" onclick="rPost()">Generate Post</button>
+          <button class="btn bg" id="p-rg" onclick="rPost()" style="display:none">↺ Regenerate</button>
+        </div>
+
+        <!-- STRUCTURED OUTPUT with visual zones -->
+      </div>
+          </div>
+          <div class="studio-pane" id="studiop-planner">
+            <div class="card"><div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>WEEKLY POST PLANNER</div><div id="planner-vl-status"></div><div class="g3"><div class="field"><label>Brand Pillar 1</label><input id="pl-p1" placeholder="e.g. Product-led growth"/></div><div class="field"><label>Brand Pillar 2</label><input id="pl-p2" placeholder="e.g. Hiring & culture"/></div><div class="field"><label>Brand Pillar 3</label><input id="pl-p3" placeholder="e.g. Founder mindset"/></div></div><div class="g2"><div class="field"><label>Target Audience</label><input id="pl-aud" placeholder="SaaS founders, B2B marketers…"/></div><div class="field"><label>Week of</label><input id="pl-week" placeholder="e.g. May 19"/></div></div><div class="field"><label>Voice <span style="font-size:9px;color:var(--lime)" id="pl-vl-tag"></span></label><textarea id="pl-voice" rows="2" placeholder="Leave blank to use Voice Lock (if set)…"></textarea></div><div class="br"><button class="btn bl" id="pl-btn" onclick="rPlanner()">Generate This Week's Ideas</button></div>
+      </div>
+          </div>
+          <div class="studio-pane" id="studiop-repurpose">
+            <div class="notice" style="margin-bottom:12px">Turn any existing content into LinkedIn posts in your locked voice. Paste blog posts, YouTube scripts, newsletters, transcripts: anything.</div>
+      <div class="card">
+        <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>REPURPOSE ENGINE</div>
+        <div style="margin-bottom:12px">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Content type:</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap" id="rp-type-wrap">
+            <button class="stt active" onclick="setRpType('blog',this)">Blog Post</button>
+            <button class="stt" onclick="setRpType('video',this)">Video Script / YT</button>
+            <button class="stt" onclick="setRpType('newsletter',this)">Newsletter</button>
+            <button class="stt" onclick="setRpType('podcast',this)">Podcast / Transcript</button>
+            <button class="stt" onclick="setRpType('twitter',this)">Twitter Thread</button>
+            <button class="stt" onclick="setRpType('other',this)">Other</button>
+          </div>
+          <input type="hidden" id="rp-type" value="blog"/>
+        </div>
+        <div class="field"><label>Paste Your Content Here</label><textarea id="rp-content" rows="8" placeholder="Paste your blog post, YouTube description, newsletter, podcast transcript, or any content here..."></textarea></div>
         <div class="g2">
           <div class="field">
-            <label>Full Name <span style="font-size:10px;color:var(--muted)">(optional)</span></label>
-            <input id="b-n" placeholder="e.g. Raj Chauhan"/>
+            <label>Repurpose Into</label>
+            <select id="rp-format">
+              <option value="single">Single LinkedIn Post</option>
+              <option value="thread">Real Thread (5-7 standalone posts)</option>
+              <option value="story">Story Post</option>
+              <option value="carousel">Carousel Outline (7 slides)</option>
+              <option value="video">60-Sec Video Script</option>
+            </select>
           </div>
           <div class="field">
-            <label>Target Audience <span style="font-size:10px;color:var(--lime)">*</span></label>
-            <input id="b-a" placeholder="e.g. B2B SaaS founders raising Series A"/>
+            <label>Target Audience</label>
+            <input id="rp-aud" placeholder="LinkedIn founders, B2B marketers…"/>
           </div>
         </div>
+        <div class="field"><label>Voice <span style="font-size:9px;color:var(--lime);font-weight:700" id="rp-vl-tag">— set Voice Lock for best results</span></label><textarea id="rp-voice" rows="2" placeholder="Leave blank to auto-use Voice Lock (recommended)."></textarea></div>
+        <div class="br"><button class="btn bl" id="rp-btn" onclick="rRepurpose()">Repurpose Content →</button></div>
+      </div>
+          </div>
+          <div class="studio-pane" id="studiop-video">
+            <div class="notice">Native video significantly boosts reach on LinkedIn when your brand or face appears in the first 4 seconds: make this count.</div><div class="card"><div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>VIDEO SCRIPT</div><div class="field"><label>Topic / Key Message</label><input id="vi-t" placeholder="The one hiring mistake that cost me $400K"/></div><div class="g2"><div class="field"><label>Target Audience</label><input id="vi-a" placeholder="Founders, VPs, Team leads…"/></div><div class="field"><label>Style</label><select id="vi-s"><option value="talking_head">Talking Head (direct to camera)</option><option value="story_arc">Story Arc (build to revelation)</option><option value="listicle">Listicle (numbered points)</option><option value="lesson">Lesson Learned (mistake → insight)</option></select></div></div><div class="field"><label>Voice <span style="font-size:9px;color:var(--lime);font-weight:700" id="vid-vl-tag">— set Voice Lock for best results</span></label><textarea id="vi-v" rows="2" placeholder="Leave blank to auto-use Voice Lock (recommended)."></textarea></div><div class="br"><button class="btn bl" id="vi-btn" onclick="rVid()">Write 60-Sec Script</button></div>
+      </div>
+          </div>
+          <div class="studio-pane" id="studiop-viral">
+            <div class="card"><div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>PASTE YOUR POST</div><div class="field"><textarea id="vr-p" rows="9" placeholder="Paste your LinkedIn post here to score its relevant reach potential…"></textarea></div><div class="field"><label>Your Timezone <span style="font-size:10px;color:var(--muted)">(for accurate posting window)</span></label><select id="vr-tz"><option value="IST">IST — India (UTC+5:30)</option><option value="GMT">GMT — UK (UTC+0)</option><option value="CET">CET — Europe (UTC+1)</option><option value="EST">EST — US East (UTC-5)</option><option value="PST">PST — US West (UTC-8)</option><option value="SGT">SGT — Singapore (UTC+8)</option><option value="AEST">AEST — Australia East (UTC+10)</option></select></div><div class="br"><button class="btn bl" id="vr-btn" onclick="rVir()">Score Reach Potential</button></div>
+      </div>
+          </div>
+          <div class="studio-pane" id="studiop-comment">
+            <div class="card">
+        <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>COMMENT STUDIO</div>
+        <div class="notice" style="margin-bottom:14px">Comments with 15+ words get 2.5x more algorithmic weight than likes. This tool generates high-value comments in your locked voice. so every comment you leave builds your brand, not just the post you're commenting on.</div>
 
         <div class="field">
-          <label>Your Background: What have you actually done? <span style="font-size:10px;color:var(--lime)">*</span></label>
-          <textarea id="b-bg" rows="3" placeholder="Be specific. E.g. 'Built and sold two B2B SaaS companies. First to $4M ARR in 18 months with no paid ads. Made 6 hiring mistakes that cost me 2 years. Now consulting 12 founders on GTM.'"></textarea>
-          <div style="font-size:10px;color:var(--muted);margin-top:4px">Don't say "experienced leader." Say what you built, broke, fixed, or learned.</div>
+          <label>Who Wrote This Post? <span style="font-size:10px;color:var(--muted);font-weight:400">(optional — helps calibrate tone)</span></label>
+          <input id="cm-author" placeholder="e.g. A VC sharing fundraising advice  or  A founder in my niche  or  Senior leader I want to connect with"/>
+        </div>
+        <div class="field">
+          <label>Paste the Post You Want to Comment On</label>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px;line-height:1.6">Paste any LinkedIn post you want to comment on. The more context, the better the output.</div>
+          <textarea id="cm-post" rows="6" placeholder="Paste the post you want to comment on here. The more context you give, the better IDEN can calibrate the comments to add genuine value."></textarea>
         </div>
 
         <div class="field">
-          <label>Your Goal on LinkedIn</label>
-          <input id="b-g" placeholder="e.g. Drive inbound for my consulting. Get speaking gigs. Attract co-founder. Build deal flow."/>
-        </div>
+            <label>Your Goal With This Comment</label>
+            <select id="cm-goal">
+              <option value="visibility">Build visibility in this niche</option>
+              <option value="authority">Establish expertise and authority</option>
+              <option value="connection">Start a genuine conversation</option>
+              <option value="contrarian">Respectfully challenge the idea</option>
+              <option value="expand">Add a story or data that enriches the post</option>
+            </select>
+          </div>
 
         <div class="field">
-          <label>Your Unique Angle: What do only you know? <span style="font-size:10px;color:var(--lime)">*</span></label>
-          <textarea id="b-an" rows="2" placeholder="E.g. 'I grew to $3M ARR without a sales team by making the product sell itself: every founder I work with thinks they need sales before product-market fit.'"></textarea>
-          <div style="font-size:10px;color:var(--muted);margin-top:4px">What would you say in a room full of your competitors that would make them uncomfortable?</div>
+          <label>Voice <span style="font-size:9px;color:var(--lime);font-weight:700" id="comment-vl-tag">— set Voice Lock for best results</span></label>
+          <textarea id="cm-voice" rows="2" placeholder="Leave blank to auto-use Voice Lock (recommended)."></textarea>
         </div>
 
         <div class="br">
-          <button class="btn bl" id="b-btn" onclick="rBrand()">Build Full Brand OS</button>
+          <button class="btn bl" id="cm-btn" onclick="rComment()">Generate Comments</button>
+        </div>
+      </div>
+          </div>
         </div>
 
-        <div id="b-ow" style="display:none">
-          <!-- Sectioned output with per-section copy -->
-          <div class="sep"><div class="sep-l"></div><div class="sep-t">Your Brand OS</div><div class="sep-l"></div></div>
+        <!-- RIGHT COLUMN: Outputs & Live Analysis -->
+        <div class="studio-right">
+          <div class="card output-card-premium">
+            <div class="output-tabs" style="display:flex;gap:4px;margin-bottom:16px;background:var(--surface);padding:3px;border-radius:var(--r-sm);border:1px solid var(--line);">
+              <button class="tb active" id="out-tab-preview" onclick="switchOutputTab('preview')">✨ Post Preview</button>
+              <button class="tb" id="out-tab-score" onclick="switchOutputTab('score')">📊 Reach Score</button>
+              <button class="tb" id="out-tab-comment" onclick="switchOutputTab('comment')">💬 Comments</button>
+              <button class="tb" id="out-tab-raw" onclick="switchOutputTab('raw')">📦 Raw Output</button>
+            </div>
 
-          <div style="background:rgba(184,240,0,.05);border:1px solid rgba(184,240,0,.15);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--muted);line-height:1.6">
-            <strong style="color:var(--lime)">How to use this:</strong> Read the full output once. Then copy individual sections into your LinkedIn profile, content plan, or Weekly Planner. The 3 Pillars save directly to your Planner below.
+            <!-- Panel 1: Post Preview -->
+            <div class="output-panel active" id="outp-preview">
+              <div id="p-ow" style="display:none">
+          <div class="sep"><div class="sep-l"></div><div class="sep-t">Generated Post</div><div class="sep-l"></div></div>
+
+          <!-- Hook zone -->
+          <div class="oz-hook" id="oz-hook-zone" style="display:none">
+            <div class="oz-hook-label">HOOK: First 210 characters</div>
+            <div class="oz-text" id="oz-hook-text"></div>
           </div>
 
-          <div class="oh">
-            <div class="ol">Full Brand System</div>
-            <div class="oa">
-              <button class="btn bg bs" onclick="exTxt('b-o','brand-os')">Export TXT</button>
-              <button class="btn bg bs" onclick="cp('b-o')">Copy All</button>
+          <!-- Body zone -->
+          <div class="oz-body" id="oz-body-zone" style="display:none">
+            <div class="oz-text" id="oz-body-text"></div>
+          </div>
+
+          <!-- CTA zone -->
+          <div class="oz-cta" id="oz-cta-zone" style="display:none">
+            <div class="oz-cta-label">CTA / CLOSING QUESTION</div>
+            <div class="oz-text" id="oz-cta-text"></div>
+          </div>
+
+          <!-- Raw output fallback -->
+          <div class="output" id="p-o" oninput="updateCharCount()" style="display:none"></div>
+
+          <div class="char-counter" id="char-counter">0 / 3,000 characters</div>
+
+          <!-- Action buttons per zone -->
+          <div class="post-actions">
+            <button class="btn bg bs" onclick="cpZone('hook')">Copy Hook</button>
+            <button class="btn bg bs" onclick="cpZone('body')">Copy Post</button>
+            <button class="btn bg bs" onclick="cpZone('full')">Copy All</button>
+            <button class="btn bg bs" onclick="exTxt('p-o','linkedin-post')">Export</button>
+            <button class="btn bl bs" onclick="scoreThisPost()" title="Send to Reach Scorer">Score This →</button>
+          </div>
+          <div class="ai-disclaimer">AI-generated. Review and personalise before posting. Results vary by profile and audience.</div>
+
+          <!-- First comment -->
+          <div class="sep"><div class="sep-l"></div><div class="sep-t">First Comment</div><div class="sep-l"></div></div>
+          <div class="notice">Put your link in the first comment. Keeps reach penalty away from the post body.</div>
+          <div id="p-cw" style="display:none">
+            <div class="oh"><div class="ol">First Comment</div><button class="btn bg bs" onclick="cp('p-c')">Copy</button></div>
+            <div class="output" id="p-c"></div>
+          </div>
+
+          <!-- Algorithm signals collapsible -->
+          <div style="margin-top:16px">
+            <button onclick="toggleAlgoTips(this)" style="width:100%;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 14px;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;text-align:left;display:flex;align-items:center;justify-content:space-between;font-family:sans-serif;transition:border-color .15s" onmouseover="this.style.borderColor='var(--lime)'" onmouseout="this.style.borderColor='var(--line)'">
+              <span style="display:flex;align-items:center;gap:8px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;color:var(--lime)"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>LinkedIn Algorithm Signals. 2026</span>
+              <span id="algo-tips-chevron" style="transition:transform .25s">▼</span>
+            </button>
+            <div id="algo-tips-body" style="display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s cubic-bezier(.4,0,.2,1)">
+              <div style="overflow:hidden">
+                <div style="background:var(--card);border:1px solid var(--line);border-top:none;border-radius:0 0 var(--r-sm) var(--r-sm);padding:14px;display:flex;flex-direction:column;gap:8px">
+                  <div class="ar"><div class="ad" style="background:var(--lime)"></div><div style="font-size:12px;color:var(--muted);line-height:1.5"><strong style="color:var(--text)">Saves = 5× more reach than likes.</strong> Write content worth bookmarking: frameworks, checklists, counterintuitive data.</div></div>
+                  <div class="ar"><div class="ad" style="background:var(--lime)"></div><div style="font-size:12px;color:var(--muted);line-height:1.5"><strong style="color:var(--text)">Hook under 210 characters.</strong> LinkedIn truncates at 210 chars. Everything before "see more" determines your reach.</div></div>
+                  <div class="ar"><div class="ad" style="background:var(--lime)"></div><div style="font-size:12px;color:var(--muted);line-height:1.5"><strong style="color:var(--text)">Comments of 15+ words = 2.5× weight.</strong> Ask specific questions that invite real answers, not "agree?"</div></div>
+                  <div class="ar"><div class="ad" style="background:var(--lime)"></div><div style="font-size:12px;color:var(--muted);line-height:1.5"><strong style="color:var(--text)">PDF Carousels = highest engagement format.</strong> 6.6% avg engagement. Upload as Document post.</div></div>
+                  <div class="ar"><div class="ad" style="background:var(--amber)"></div><div style="font-size:12px;color:var(--muted);line-height:1.5"><strong style="color:var(--text)">Reply within 60 minutes.</strong> Early comment velocity signals quality to the algorithm.</div></div>
+                  <div class="ar"><div class="ad" style="background:var(--amber)"></div><div style="font-size:12px;color:var(--muted);line-height:1.5"><strong style="color:var(--text)">External links in body = ~50% reach penalty.</strong> Always put links in first comment.</div></div>
+                  <div class="ar"><div class="ad" style="background:var(--red)"></div><div style="font-size:12px;color:var(--muted);line-height:1.5"><strong style="color:var(--text)">Never "Comment YES if you agree."</strong> LinkedIn NLP detects engagement bait. Immediate reach suppression.</div></div>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="output" id="b-o"></div>
-          <div class="ai-disclaimer">AI-generated brand strategy. Treat as a starting point: refine with your real experience and goals. Re-run with more specific inputs for sharper output.</div>
+        </div>
+            </div>
 
-          <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn bg bs" onclick="savePillarsFromBrandOS()" id="b-save-pillars" style="display:none">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-              Save Pillars to Weekly Planner
-            </button>
-            <button class="btn bg bs" onclick="copyBrandOSSection('headline')" id="b-copy-headline" style="display:none">Copy Headline</button>
-            <button class="btn bg bs" onclick="copyBrandOSSection('about')" id="b-copy-about" style="display:none">Copy About Framework</button>
+            <!-- Panel 2: Reach Score -->
+            <div class="output-panel" id="outp-score">
+              <div id="vr-ow" style="display:none"><div class="mw"><div style="display:flex;align-items:flex-end;gap:14px"><div class="ms" id="vr-sc">—</div><div><div style="font-size:13px;font-weight:600" id="vr-gr">—</div><div class="ml">Relevant Reach Score</div></div></div><div class="mb"><div class="mf" id="vr-fi" style="width:0"></div></div></div><div class="oh" style="margin-top:12px"><div class="ol">Full Analysis</div><div class="oa"><button class="btn bl bs" onclick="rewriteWithIDEN()">Rewrite in Post Studio →</button><button class="btn bg bs" onclick="exTxt('vr-o','reach-analysis')">Export TXT</button><button class="btn bg bs" onclick="cp('vr-o')">Copy</button></div></div><div class="output" id="vr-o"></div></div>
+            </div>
+
+            <!-- Panel 3: Comments -->
+            <div class="output-panel" id="outp-comment">
+              <div id="cm-ow" style="display:none">
+          <div class="sep"><div class="sep-l"></div><div class="sep-t">4 Comment Options</div><div class="sep-l"></div></div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.6;font-family:sans-serif">Pick the one that feels most natural. Edit before posting. your own touch always makes it stronger.</div>
+
+          <!-- Comment cards render here -->
+          <div id="cm-cards" style="display:flex;flex-direction:column;gap:10px"></div>
+
+          <div class="ai-disclaimer" style="margin-top:12px">AI-generated comments. Always review and personalise before posting. Authentic engagement always outperforms automated responses.</div>
+        </div>
+            </div>
+
+            <!-- Panel 4: Raw Output -->
+            <div class="output-panel" id="outp-raw">
+              <!-- Repurpose Output -->
+              <div id="rp-ow" style="display:none">
+                <div id="rp-ow" style="display:none">
+          <div class="oh"><div class="ol">Repurposed Content</div><div class="oa"><button class="btn bg bs" onclick="exTxt('rp-o','repurposed')">Export TXT</button><button class="btn bg bs" onclick="cp('rp-o')">Copy</button></div></div>
+          <div class="output" id="rp-o"></div>
+          <div class="ai-disclaimer">AI-generated content. Review and personalise before posting. Results vary by source content quality.</div>
+        </div>
+              </div>
+              
+              <!-- Video Output -->
+              <div id="vi-ow" style="display:none">
+                <div id="vi-ow" style="display:none"><div class="oh"><div class="ol">Video Script</div><div class="oa"><button class="btn bg bs" onclick="exTxt('vi-o','video-script')">Export TXT</button><button class="btn bg bs" onclick="cp('vi-o')">Copy</button></div></div><div class="output" id="vi-o"></div></div>
+              </div>
+              
+              <!-- Planner Output -->
+              <div id="pl-ow" style="display:none">
+                <div id="pl-cards" style="display:none"></div><div id="pl-ow" style="display:none"><div class="oh"><div class="ol">Full Plan</div><div class="oa"><button class="btn bg bs" onclick="exTxt('pl-o','weekly-plan')">Export TXT</button><button class="btn bg bs" onclick="cp('pl-o')">Copy</button></div></div><div class="output" id="pl-o"></div></div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
     </div>
 
+    
+    
+    <!-- CAROUSEL (Consolidated Workspace) -->
+    <div class="page" id="page-carousel">
+      <!-- Mobile notice - only shows on small screens -->
+      <div id="carousel-mobile-notice" style="display:none;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:14px;font-size:12px;color:rgba(245,158,11,.9);line-height:1.6;font-family:sans-serif">
+        <strong style="color:var(--amber)">Best on desktop.</strong> Carousel Builder includes colour pickers, a slide preview, and PDF download. These work best on a larger screen. You can still generate the script here and download on desktop.
+      </div>
+      <div class="notice" style="margin-bottom:12px">Generate a branded LinkedIn carousel PDF. Upload directly to LinkedIn as a <strong>Document post</strong> — it renders as a swipeable carousel. No Canva needed. Document posts get <strong>3x more reach</strong> than image carousels on LinkedIn.</div>
+
+      <!-- How it works -->
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <div style="flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-align:center">
+          <div style="font-size:16px;margin-bottom:4px">✍️</div>
+          <div style="font-size:10px;font-weight:700;color:var(--ivory);margin-bottom:2px">1. Generate</div>
+          <div style="font-size:9px;color:var(--muted);line-height:1.4">Enter topic, pick style, generate your carousel script</div>
+        </div>
+        <div style="flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-align:center">
+          <div style="font-size:16px;margin-bottom:4px">⬇️</div>
+          <div style="font-size:10px;font-weight:700;color:var(--ivory);margin-bottom:2px">2. Download PDF</div>
+          <div style="font-size:9px;color:var(--muted);line-height:1.4">Your branded slides are built and downloaded instantly</div>
+        </div>
+        <div style="flex:1;min-width:0;background:var(--surface);border:1px solid rgba(184,240,0,.2);border-radius:8px;padding:10px 12px;text-align:center">
+          <div style="font-size:16px;margin-bottom:4px">🔗</div>
+          <div style="font-size:10px;font-weight:700;color:var(--lime);margin-bottom:2px">3. Upload to LinkedIn</div>
+          <div style="font-size:9px;color:var(--muted);line-height:1.4">Post → Document → select PDF → it becomes a carousel</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M17 2H7"/></svg>CAROUSEL DETAILS</div>
+        <div class="field"><label>Topic or Hook</label><input id="c-t" placeholder="7 things I wish I knew before scaling to $1M ARR"/></div>
+        <div style="margin-bottom:10px">
+          <button onclick="toggleCarouselColors(this)" style="background:none;border:1px solid var(--line);border-radius:6px;color:var(--muted);font-size:11px;font-weight:600;padding:6px 12px;cursor:pointer;font-family:sans-serif;display:flex;align-items:center;gap:6px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            Customise colours ▾
+          </button>
+          <div id="carousel-colors-panel" style="display:none;margin-top:10px">
+            <div class="g2">
+              <div class="field"><label>Brand Primary Color</label><input type="color" id="c-c1" value="#B8F000"/></div>
+              <div class="field"><label>Brand Accent Color</label><input type="color" id="c-c2" value="#0A0A0A"/></div>
+            </div>
+            <div class="g2">
+              <div class="field"><label>Background Color</label><input type="color" id="c-bg" value="#0A0A0A"/></div>
+              <div class="field"><label>Text Color</label><input type="color" id="c-tc" value="#F5F0E8"/></div>
+            </div>
+          </div>
+        </div>
+        <div class="g2">
+          <div class="field"><label>Number of Slides</label>
+            <select id="c-s">
+              <option value="5">5 slides</option>
+              <option value="7" selected>7 slides</option>
+              <option value="10">10 slides</option>
+            </select>
+          </div>
+          <div class="field"><label>Style</label>
+            <select id="c-style">
+              <option value="educational">Educational (Tips & Frameworks)</option>
+              <option value="story">Story Arc (Hook → Journey → Lesson)</option>
+              <option value="listicle">Listicle (Numbered Insights)</option>
+              <option value="myth">Myth vs Truth (Contrarian)</option>
+              <option value="before_after">Before / After Transformation</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label>Voice <span style="font-size:9px;color:var(--lime);font-weight:700" id="car-vl-tag">— set Voice Lock for best results</span></label>
+          <textarea id="c-v" rows="2" placeholder="Leave blank to auto-use Voice Lock (recommended)."></textarea>
+        </div>
+        <div class="br">
+          <button class="btn bl" id="c-btn" onclick="rCar()">Generate Carousel Script →</button>
+        </div>
+
+        <!-- PDF Preview area -->
+        <div id="c-ow" style="display:none">
+          <div class="sep"><div class="sep-l"></div><div class="sep-t">Slide Preview</div><div class="sep-l"></div></div>
+          <!-- Live slide previews -->
+          <div id="c-slides-preview" style="display:flex;gap:8px;overflow-x:auto;padding:8px 0 12px;scrollbar-width:thin"></div>
+
+          <div class="br" style="gap:8px;flex-wrap:wrap">
+            <button class="btn bg bs" id="c-pdf-btn" onclick="downloadCarouselPDF()" style="display:none">⬇ Download LinkedIn Carousel PDF</button>
+            <button class="btn bg bs" onclick="exTxt('c-o','carousel-script')">Export Script TXT</button>
+            <button class="btn bg bs" onclick="cp('c-o')">Copy Script</button>
+          </div>
+
+          <div class="oh" style="margin-top:14px">
+            <div class="ol">Full Script + Caption</div>
+          </div>
+          <div class="output" id="c-o"></div>
+          <div class="ai-disclaimer">AI-generated carousel. Review all slides before downloading and posting.</div>
+        </div>
+      </div>
+
+      <!-- Hidden canvas for PDF generation -->
+      <canvas id="c-canvas" style="display:none"></canvas>
+    </div>
+
+    
+    
+    <!-- CLIENT VAULT (Consolidated Workspace) -->
+    <div class="page" id="page-vault">
+      <div class="notice" style="margin-bottom:14px;background:rgba(245,158,11,.06);border-color:rgba(245,158,11,.2);color:rgba(245,158,11,.9)">
+        <strong>Agency Client Vault.</strong> Save up to 25 client voice profiles. Load any client in one click — every tool instantly writes in their exact voice.
+      </div>
+
+      <!-- Add new client -->
+      <div class="card" id="vault-add-card">
+        <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>ADD NEW CLIENT</div>
+        <div class="g2">
+          <div class="field"><label>Client Name</label><input id="vault-name" placeholder="e.g. Sarah Chen"/></div>
+          <div class="field"><label>Role / Title</label><input id="vault-role" placeholder="e.g. Marketing Director, SaaS Founder"/></div>
+        </div>
+        <div class="field">
+          <label>Paste Their Voice DNA Profile</label>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px;line-height:1.6">Run Voice DNA for this client first, then paste the full output here. Or paste 3-5 of their posts below and click Extract.</div>
+          <textarea id="vault-voice" rows="5" placeholder="Paste the Voice DNA profile output here, OR paste 3-5 of their LinkedIn posts and click Extract Voice below."></textarea>
+        </div>
+        <div class="field"><label>Brand OS Notes <span style="font-size:10px;color:var(--muted)">(optional)</span></label><input id="vault-brand" placeholder="Key positioning, pillars, audience — quick reference notes"/></div>
+        <div class="br">
+          <button class="btn bl" onclick="saveVaultClient()">Save Client</button>
+          <button class="btn bg" onclick="extractVaultVoice()">Extract Voice from Posts</button>
+        </div>
+        <div id="vault-extract-ow" style="display:none">
+          <div class="oh"><div class="ol">Extracted Voice</div><button class="btn bg bs" onclick="useExtractedVoice()">Use This Voice →</button></div>
+          <div class="output" id="vault-extract-o" style="max-height:200px"></div>
+        </div>
+      </div>
+
+      <!-- Client list -->
+      <div class="card">
+        <div class="ct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>YOUR CLIENTS
+          <span id="vault-count" style="background:rgba(245,158,11,.15);color:var(--amber);font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:8px;font-family:sans-serif">0 clients</span>
+        </div>
+
+        <!-- Active client indicator -->
+        <div id="vault-active-banner" style="display:none;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <div style="font-size:12px;font-family:sans-serif"><span style="color:var(--amber);font-weight:700">Active: </span><span id="vault-active-name" style="color:var(--ivory)"></span><span id="vault-active-role" style="color:var(--muted);font-size:11px"></span></div>
+          <button class="btn bg bs" onclick="clearActiveClient()">Clear</button>
+        </div>
+
+        <div id="vault-empty" style="text-align:center;padding:32px 20px;color:var(--muted);font-size:13px;font-family:sans-serif;line-height:1.6">
+          No clients saved yet.<br/>
+          <span style="font-size:11px">Add your first client above. Each one gets their own locked voice that any tool can use.</span>
+        </div>
+        <div id="vault-list" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+    </div>
+
+    
+    <div class="page" id="page-algo" style="display:none"></div>
   </div>
+
+</div>
+</div>
 </div>
 </div>
 
@@ -2015,7 +2892,7 @@ const FORMAT_HINTS = {
 
 function sTab(val, btn){
   document.getElementById('pt').value = val;
-  document.querySelectorAll('#page-post .tb').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#studiop-post .tb').forEach(b=>b.classList.remove('active'));
   if(btn) btn.classList.add('active');
   const hint = document.getElementById('format-hint');
   if(hint) hint.innerHTML = FORMAT_HINTS[val] || '';
@@ -2033,6 +2910,7 @@ async function rPost(){
   document.getElementById('p-ow').style.display='block';
   document.getElementById('p-cw').style.display='none';
   document.getElementById('p-rg').style.display='inline-flex';
+  switchOutputTab('preview');
 
   // Hide output zones, show raw while streaming
   ['oz-hook-zone','oz-body-zone','oz-cta-zone'].forEach(id=>{
@@ -2093,6 +2971,7 @@ BEST TIME: [day + window]`,
       sBtn('p-btn', false, 'Generate Post');
       updateCharCount();
       saveToHistory('Post Studio', full);
+      switchOutputTab('preview');
 
       // Track posts created
       const pc = parseInt(localStorage.getItem('idenPostCount')||'0') + 1;
@@ -2197,10 +3076,11 @@ function cpZone(zone){
 function scoreThisPost(){
   const post = document.getElementById('p-o')?.textContent||'';
   if(!post){ showT('Generate a post first.'); return; }
+  const cleanPost = post.split('===')[1] || post.split('---')[0] || post;
   const vr = document.getElementById('vr-p');
-  if(vr) vr.value = post.split('---')[0].trim();
+  if(vr) vr.value = cleanPost.trim();
   nTo('viral');
-  showT('Post loaded into Reach Scorer →');
+  rVir();
 }
 
 // -- VIDEO SCRIPT — FULL PROMPT REWRITE -----------------------
@@ -2212,6 +3092,7 @@ async function rVid(){
   const voice = getVoiceForTool('vi-v');
   document.getElementById('vi-ow').style.display='block';
   sBtn('vi-btn', true, '');
+  switchOutputTab('raw');
 
   await callC(
     `You are a LinkedIn native video specialist who has studied every format of LinkedIn video that has driven profile visits and follower growth. You know these facts about LinkedIn video in 2025-2026:
@@ -2306,7 +3187,8 @@ HARD RULES:
 - No "Hey guys", no "Welcome back", no "Don't forget to like"
 - CTA names a specific action the viewer takes in the next 60 seconds`,
     'vi-o',
-    (full)=>{sBtn('vi-btn',false,'Write 60-Sec Script');saveToHistory('Video Script',full);}
+    (full)=>{sBtn('vi-btn',false,'Write 60-Sec Script');saveToHistory('Video Script',full);
+      switchOutputTab('raw');}
   );
   sBtn('vi-btn', false, 'Write 60-Sec Script');
 }
@@ -2635,12 +3517,55 @@ function triggerLockPop(){
 
 // -- VOICE LOCKED GLOW ON CARD ------------------------------
 function applyVoiceLockedGlow(){
-  const card = document.querySelector('#page-voice .card');
+  const card = document.querySelector('#fdnp-voice .card');
   if(card && getVL()){
     card.classList.add('voice-locked-glow');
   } else if(card){
     card.classList.remove('voice-locked-glow');
   }
+}
+
+
+// -- CONTEXT SHARING & INTER-TOOL CONNECTORS ------------------
+function autoFillContext() {
+  const savedPillars = localStorage.getItem('idenPillars');
+  const storedAudience = getStoredAudience();
+  
+  if (savedPillars) {
+    try {
+      const p = JSON.parse(savedPillars);
+      const p1 = document.getElementById('pl-p1');
+      const p2 = document.getElementById('pl-p2');
+      const p3 = document.getElementById('pl-p3');
+      if (p1 && !p1.value && p[0]) p1.value = p[0];
+      if (p2 && !p2.value && p[1]) p2.value = p[1];
+      if (p3 && !p3.value && p[2]) p3.value = p[2];
+    } catch(e) {}
+  }
+  
+  if (storedAudience) {
+    const plAud = document.getElementById('pl-aud');
+    if (plAud && !plAud.value) plAud.value = storedAudience;
+    
+    const pAud = document.getElementById('p-a');
+    if (pAud && !pAud.value) pAud.value = storedAudience;
+    
+    const rpAud = document.getElementById('rp-aud');
+    if (rpAud && !rpAud.value) rpAud.value = storedAudience;
+    
+    const viAud = document.getElementById('vi-a');
+    if (viAud && !viAud.value) viAud.value = storedAudience;
+  }
+}
+
+function commentOnThisPost() {
+  const post = document.getElementById('p-o')?.textContent || '';
+  if (!post) { showT('Generate a post first.'); return; }
+  const cleanPost = post.split('===')[1] || post.split('---')[0] || post;
+  const cmPost = document.getElementById('cm-post');
+  if (cmPost) cmPost.value = cleanPost.trim();
+  nTo('comment');
+  rComment();
 }
 
 window.addEventListener('load',()=>{
@@ -2858,7 +3783,8 @@ How do they end posts? 2-3 examples of their actual CTAs. The formula behind the
 3-sentence instruction for any AI: "Write in a voice that [specific]. Always [specific]. Never [specific]."`,
 'v-o',(full)=>{sBtn('v-btn',false,'Extract Voice DNA');saveToHistory('Voice DNA',full);const vBtn=document.getElementById('v-lock-btn');if(vBtn)vBtn.style.display='inline-flex'});sBtn('v-btn',false,'Extract Voice DNA')}
 
-async function rPlanner(){const p1=document.getElementById('pl-p1').value.trim(),p2=document.getElementById('pl-p2').value.trim(),p3=document.getElementById('pl-p3').value.trim();if(!p1&&!p2&&!p3){alert('Enter at least one brand pillar.');return}const aud=document.getElementById('pl-aud').value.trim(),week=document.getElementById('pl-week').value.trim(),voice=getVoiceForTool('pl-voice');document.getElementById('pl-cards').style.display='none';document.getElementById('pl-ow').style.display='block';sBtn('pl-btn',true,'');const pillars=[p1,p2,p3].filter(Boolean).join(' | ');await callC(`Before generating any idea, ask: what specific tension does this audience feel about each pillar that they cannot articulate? Not what they say they want: what they secretly suspect is true but have not seen written down. Every idea must be born from that tension. A scroll-stopping hook names the tension directly. Generic ideas like "5 tips for growth" or "why mindset matters" do not exist in your output. Every hook must be specific enough that someone in this audience reads it and thinks "that is exactly what I was thinking."`,`Generate a week of LinkedIn content ideas that will actually stop people scrolling.
+async function rPlanner(){const p1=document.getElementById('pl-p1').value.trim(),p2=document.getElementById('pl-p2').value.trim(),p3=document.getElementById('pl-p3').value.trim();if(!p1&&!p2&&!p3){alert('Enter at least one brand pillar.');return}const aud=document.getElementById('pl-aud').value.trim(),week=document.getElementById('pl-week').value.trim(),voice=getVoiceForTool('pl-voice');document.getElementById('pl-cards').style.display='none';document.getElementById('pl-ow').style.display='block';sBtn('pl-btn',true,'');
+  switchOutputTab('raw');const pillars=[p1,p2,p3].filter(Boolean).join(' | ');await callC(`Before generating any idea, ask: what specific tension does this audience feel about each pillar that they cannot articulate? Not what they say they want: what they secretly suspect is true but have not seen written down. Every idea must be born from that tension. A scroll-stopping hook names the tension directly. Generic ideas like "5 tips for growth" or "why mindset matters" do not exist in your output. Every hook must be specific enough that someone in this audience reads it and thinks "that is exactly what I was thinking."`,`Generate a week of LinkedIn content ideas that will actually stop people scrolling.
 
 Pillars: ${pillars}
 Audience: ${aud||'LinkedIn professionals'}
@@ -2880,7 +3806,9 @@ REACH POTENTIAL: [High/Medium/Low]: one sentence reason
 
 After all 5:
 WEEK STRATEGY: how these 5 build on each other and what order creates momentum
-PRIORITY POST: which single post to put most energy into this week and why`,'pl-o',(full)=>{sBtn('pl-btn',false,'Generate This Weeks Ideas');renderIdeaCards(full)});sBtn('pl-btn',false,'Generate This Weeks Ideas')}
+PRIORITY POST: which single post to put most energy into this week and why`,'pl-o',(full)=>{sBtn('pl-btn',false,'Generate This Weeks Ideas');renderIdeaCards(full);
+      switchOutputTab('raw');
+    });sBtn('pl-btn',false,'Generate This Weeks Ideas')}
 function renderIdeaCards(text){const cards=document.getElementById('pl-cards');if(!cards)return;const blocks=text.split(/IDEA \d+/g).filter(b=>b.trim()&&b.includes('HOOK'));const days=['Monday','Tuesday','Wednesday','Thursday','Friday'];const ideas=[];blocks.slice(0,5).forEach((block,i)=>{const hookM=block.match(/HOOK:\s*([^\n]+)/i);const fmtM=block.match(/FORMAT:\s*([^\n]+)/i);const dayM=block.match(/DAY:\s*([^\n]+)/i);ideas.push({day:dayM?dayM[1].trim():days[i],fmt:fmtM?fmtM[1].trim():'Post',hook:hookM?hookM[1].trim():'(see full plan below)'})});if(!ideas.length){cards.style.display='none';return}cards.style.display='block';const colors=['var(--lime)','#8B5CF6','var(--amber)','#06B6D4','#EC4899'];cards.innerHTML=`<div class="idea-grid">${ideas.map((idea,i)=>`<div class="idea-card" onclick="useIdea(${i})" id="idea-${i}"><div class="idea-day" style="color:${colors[i]}">${esc(idea.day)} · ${esc(idea.fmt)}</div><div class="idea-hook">"${esc(idea.hook)}"</div><div class="idea-meta">Click to send to Post Studio →</div></div>`).join('')}</div>`;window._ideas=ideas}
 function useIdea(i){
   const idea=window._ideas?.[i];
@@ -2924,7 +3852,7 @@ function useIdea(i){
 
   document.getElementById('pt').value=v;
   // Update tab active state
-  document.querySelectorAll('#page-post .tb').forEach(b=>{
+  document.querySelectorAll('#studiop-post .tb').forEach(b=>{
     const tabVal=b.getAttribute('onclick')?.match(/sTab\('(\w+)'/)?.[1];
     b.classList.toggle('active',tabVal===v);
   });
@@ -3491,11 +4419,13 @@ function initCommentStudio(){
 
 async function rComment(){
   const post=document.getElementById('cm-post').value.trim();
+  const cmAuthor=document.getElementById('cm-author')?.value.trim()||'';
   const goal=document.getElementById('cm-goal').value;
   const voice=getVoiceForTool('cm-voice');
   if(!post){alert('Paste the post you want to comment on first.');return}
   document.getElementById('cm-ow').style.display='block';
   document.getElementById('cm-cards').innerHTML='<div style="color:var(--muted);font-size:12px;padding:8px 0">Generating 4 comments in your voice...</div>';
+  switchOutputTab('comment');
 
   sBtn('cm-btn',true,'');
   const goalMap={visibility:'build visibility in this niche by showing up as a knowledgeable engaged voice',authority:'establish genuine expertise and add a specific observation, data point, or experience',connection:'start a real conversation and ask a question that makes the author want to reply',contrarian:'respectfully challenge or nuance the idea, not to argue but to deepen the discussion',expand:'enrich the post by adding a story, number, or perspective the original did not cover'};
@@ -3540,6 +4470,7 @@ RULES: Never start with "Great post", "Love this", or any praise. Every comment 
       sBtn('cm-btn',false,'Generate Comments');
       saveToHistory('Comment Studio',full);
       renderCommentCards(full);
+      switchOutputTab('comment');
     }
   );
   sBtn('cm-btn',false,'Generate Comments');
@@ -3718,6 +4649,7 @@ async function rRepurpose(){
   const voice=getVoiceForTool('rp-voice');
   document.getElementById('rp-ow').style.display='block';
   sBtn('rp-btn',true,'');
+  switchOutputTab('raw');
   const fmtMap={single:'LinkedIn post (150–250 words, strong hook, clear body, CTA question)',thread:'Mini-thread: bold opening claim, 5–7 numbered insights, 300–400 words total',story:'Personal story arc: scene → conflict → turn → insight → lesson, 200–300 words',carousel:'Carousel outline: cover slide + 5 content slides + CTA slide. Each slide: headline (max 7 words) + body (max 20 words)',video:'60-second LinkedIn video script with [0-4s] hook, [4-15s] problem, [15-45s] content, [45-55s] insight, [55-60s] CTA'};
   const typeMap={blog:'blog post',video:'video script',newsletter:'newsletter',podcast:'podcast transcript',twitter:'Twitter thread',other:'content'};
   await callC(
@@ -3750,7 +4682,8 @@ After the content write:
 FIRST COMMENT (50-70 words, natural bridge, [your link here] placeholder)
 SPECIFICITY PRESERVED: [what specific detail from the source appears in the output]`,
     'rp-o',
-    (full)=>{sBtn('rp-btn',false,'Repurpose Content →');saveToHistory('Repurpose Engine',full);}
+    (full)=>{sBtn('rp-btn',false,'Repurpose Content →');saveToHistory('Repurpose Engine',full);
+      switchOutputTab('raw');}
   );
   sBtn('rp-btn',false,'Repurpose Content →');
 }
@@ -3764,6 +4697,7 @@ async function rVir(){
   document.getElementById('vr-sc').textContent='—';
   document.getElementById('vr-gr').textContent='—';
   sBtn('vr-btn',true,'');
+  switchOutputTab('score');
   await callC(
     `You are a LinkedIn algorithm analyst using data from AuthoredUp's analysis of 3 million posts and Richard van der Blom's 2025 Algorithm Report. You score posts with surgical precision: quote exact words from the post as evidence. The very first word of your response must be SCORE: followed immediately by the number. No preamble whatsoever.`,
     `Score this LinkedIn post. Your first line must be: SCORE: [X]/10
@@ -3799,6 +4733,7 @@ BEST POSTING WINDOW:
     (text)=>{
       sBtn('vr-btn',false,'Score Reach Potential');
       saveToHistory('Reach Scorer',text);
+      switchOutputTab('score');
       const m=text.match(/SCORE:\s*(\d+)\/10/);
       if(m){
         const sc=parseInt(m[1]);
@@ -3851,7 +4786,7 @@ function checkPlannerPillarGate(){
   const gate=document.createElement('div');gate.id='planner-gate';
   gate.style.cssText='background:rgba(184,240,0,.04);border:1px solid rgba(184,240,0,.15);border-radius:10px;padding:16px;margin-bottom:14px;text-align:center';
   gate.innerHTML='<div style="font-size:13px;font-weight:700;color:var(--ivory);margin-bottom:5px">Your pillars auto-fill from Brand OS</div><div style="font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:12px">Build Brand OS first. 2 minutes, 3 pillars. Then return here and they auto-fill.</div><button onclick="nTo("brand")" style="background:var(--lime);color:#000;border:none;border-radius:8px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:sans-serif">Build Brand OS First →</button><div style="margin-top:8px;font-size:10px;color:var(--muted)">Or enter pillars manually below</div>';
-  const card=document.querySelector('#page-planner .card');
+  const card=document.querySelector('#studiop-planner .card');
   const g3=card?.querySelector('.g3');
   if(card&&g3)card.insertBefore(gate,g3);
 }

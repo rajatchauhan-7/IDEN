@@ -5,10 +5,31 @@ import { defineConfig } from 'vite';
 
 export default defineConfig(() => {
     return {
-          plugins: [react(), tailwindcss()],
+          plugins: [
+              react(),
+              tailwindcss(),
+              {
+                  name: 'html-rewrite',
+                  configureServer(server) {
+                      server.middlewares.use((req, res, next) => {
+                          if (req.url) {
+                              const url = new URL(req.url, 'http://localhost');
+                              if (url.pathname === '/app' || url.pathname === '/app/') {
+                                  req.url = '/app.html' + url.search;
+                              } else if (url.pathname === '/privacy' || url.pathname === '/privacy/') {
+                                  req.url = '/privacy.html' + url.search;
+                              } else if (url.pathname === '/terms' || url.pathname === '/terms/') {
+                                  req.url = '/terms.html' + url.search;
+                              }
+                          }
+                          next();
+                      });
+                  }
+              }
+          ],
           resolve: {
                   alias: {
-                            '@': path.resolve(__dirname, '.'),
+                             '@': path.resolve(__dirname, '.'),
                   },
           },
           build: {
@@ -28,3 +49,4 @@ export default defineConfig(() => {
           },
     };
 });
+
