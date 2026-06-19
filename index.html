@@ -899,6 +899,57 @@
       line-height: 1.55;
     }
 
+    /* ── ICP PERSONAS ── */
+    .icp-section {
+      margin-bottom: 64px;
+      opacity: 0; animation: fadeUp 0.7s ease forwards 0.55s;
+    }
+    .icp-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--rl);
+      overflow: hidden;
+    }
+    .icp-cell {
+      background: var(--surface);
+      padding: 26px 24px;
+      position: relative;
+      transition: background 0.2s;
+    }
+    .icp-cell:hover { background: var(--surface-2); }
+    .icp-cell::before {
+      content: '';
+      position: absolute; top: 0; left: 0;
+      width: 28px; height: 2px;
+      background: var(--lime);
+      opacity: 0.55;
+    }
+    .icp-role {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--lime);
+      margin-bottom: 12px;
+    }
+    .icp-before {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.45;
+      margin-bottom: 8px;
+    }
+    .icp-after {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .icp-after strong { color: var(--text); font-weight: 600; }
+
     /* ── SECOND CTA ── */
     .cta2-section {
       margin-bottom: 64px;
@@ -1167,7 +1218,7 @@
   <div class="container">
     <section class="hero">
 
-      <div class="overline">For founders tired of sounding like everyone else</div>
+      <div class="overline">For anyone tired of sounding like everyone else</div>
 
       <h1 class="hero-h1">
         Your LinkedIn.<br />
@@ -1200,9 +1251,9 @@
   <div class="container">
     <div class="pain-pills">
       <span class="pill">ChatGPT writes like ChatGPT, not you</span>
-      <span class="pill">Notion + Docs + Hootsuite + nothing ships</span>
+      <span class="pill">5 client voices, all starting to sound the same</span>
       <span class="pill">you post once, disappear for 3 weeks</span>
-      <span class="pill">your LinkedIn sounds like everyone else's</span>
+      <span class="pill">cold outreach ignored because nobody knows you</span>
     </div>
   </div>
 
@@ -1544,6 +1595,43 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- ── ICP PERSONAS ── -->
+  <div class="container">
+    <section class="icp-section">
+      <div class="section-head">
+        <div class="section-tag">// Who it's for</div>
+        <div class="section-title">Built for every way you show up on LinkedIn</div>
+      </div>
+      <div class="icp-grid">
+
+        <div class="icp-cell">
+          <div class="icp-role">Founders &amp; Consultants</div>
+          <div class="icp-before">Your posts sound like everyone else's ChatGPT output.</div>
+          <p class="icp-after">Voice DNA locks in the rhythm, hooks, and tone that make you <strong>sound like you</strong>. Show up as the one person nobody can copy.</p>
+        </div>
+
+        <div class="icp-cell">
+          <div class="icp-role">Ghostwriters</div>
+          <div class="icp-before">You lose the thread switching between client voices all day.</div>
+          <p class="icp-after">Client Vault keeps every voice <strong>locked and separate</strong>. Switch from one client to the next in a click, with zero drift.</p>
+        </div>
+
+        <div class="icp-cell">
+          <div class="icp-role">Agencies</div>
+          <div class="icp-before">Scaling client LinkedIn means hiring more writers.</div>
+          <p class="icp-after">Run up to 10 client voices through <strong>one system</strong>. Grow the roster without growing the headcount or losing the voice that keeps clients.</p>
+        </div>
+
+        <div class="icp-cell">
+          <div class="icp-role">Sales Teams</div>
+          <div class="icp-before">Cold outreach gets ignored because you're a stranger.</div>
+          <p class="icp-after">Show up in the feed first. A presence that makes you <strong>familiar before the DM lands</strong>. Familiar gets replies.</p>
+        </div>
+
+      </div>
+    </section>
   </div>
 
   <!-- ── SECOND CTA ── -->
