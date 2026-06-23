@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IDEN: Your LinkedIn Voice. Finally.</title>
-  <meta name="description" content="IDEN extracts your Voice DNA then runs your entire LinkedIn workflow in your exact voice. Posts, carousels, newsletters, scripts. Join the waitlist." />
-  <meta property="og:title" content="IDEN: Your LinkedIn Voice. Finally." />
+  <title>IDEN: The LinkedIn Personal Brand OS. Your Voice, Not AI's.</title>
+  <meta name="description" content="IDEN is the LinkedIn Personal Brand OS. It extracts your Voice DNA, then runs your entire LinkedIn workflow in your exact voice. Posts, carousels, newsletters, scripts. Join the waitlist." />
+  <meta property="og:title" content="IDEN: The LinkedIn Personal Brand OS" />
   <meta property="og:description" content="Not another AI writer. IDEN learns how you write and who you are, then generates every LinkedIn asset in your exact voice." />
   <meta property="og:image" content="https://useiden.com/og-image.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -1137,6 +1137,14 @@
       .container, .container-wide { padding: 0 14px; }
     }
 
+    /* Tighten feature cards on mobile: less dead space between icon and title */
+    @media (max-width: 640px) {
+      .feat-hero-card { padding: 22px 18px; }
+      .feat-icon { margin-bottom: 10px; }
+      .feat-cell { padding: 18px 16px; }
+      .feat-cell-icon { margin-bottom: 8px; }
+    }
+
     /* Override Google Form white background via CSS filter */
     .gform-frame-wrap iframe {
       filter: invert(1) hue-rotate(180deg);
@@ -1248,7 +1256,7 @@
   <div class="container">
     <section class="hero">
 
-      <div class="overline">For anyone tired of sounding like everyone else</div>
+      <div class="overline">The LinkedIn personal brand engine</div>
 
       <h1 class="hero-h1">
         AI doesn't sound<br />
@@ -1256,7 +1264,8 @@
       </h1>
 
       <p class="hero-sub">
-        IDEN learns how you actually write, then sounds like you in every post.
+        IDEN learns how you actually write, then sounds like you in every
+        <strong>LinkedIn</strong> post you publish.
         <strong>Your voice. Not AI's.</strong>
       </p>
 
@@ -1569,7 +1578,7 @@ I am not "embracing the journey." I am annoyed at myself. But I would rather wri
     <section class="how-section">
       <div class="section-head">
         <div class="section-tag">How it works</div>
-        <h2 class="section-title">Three steps. Then you never stare at a blank page again.</h2>
+        <h2 class="section-title">Three steps. Never stare at a blank page again.</h2>
       </div>
       <div class="how-grid">
         <div class="how-step">
@@ -1753,7 +1762,7 @@ I am not "embracing the journey." I am annoyed at myself. But I would rather wri
   <div class="container">
     <div class="cta2-section">
       <div class="cta2-card">
-        <div class="cta2-title">Sound like yourself.<br /><span class="lime">Without the effort.</span></div>
+        <div class="cta2-title">25 founding spots.<br /><span class="lime">Then the price goes up.</span></div>
         <p class="cta2-sub">Join the waitlist. Be first to run your whole LinkedIn presence in your own voice, with no tool lock-in and your content yours to export anytime. Lock in LTD pricing before it closes.</p>
         <div class="cta2-form">
           <a class="btn-cta2" href="https://docs.google.com/forms/d/e/1FAIpQLScG5Vv_hTZaRPwGpn17Xs7FAydiAzcPQ3m0KY8nneMTtBrqMQ/viewform" target="_blank" rel="noopener">
@@ -1832,7 +1841,7 @@ I am not "embracing the journey." I am annoyed at myself. But I would rather wri
     };
 
     var POST = 'Nobody taught you how to write for LinkedIn.\n\nThey taught you how to write for school.\nClear thesis. Supporting points. Conclusion.\n\nLinkedIn does not care.\n\nLinkedIn rewards the first line. That is it.\nIf line one does not stop the scroll, you are invisible.\n\nOpen with the uncomfortable truth.\nOpen with a number.\nOpen with something that makes them stop.\n\nThe rest of your post is just proof.\n\nStop writing essays.\nStart writing first lines.';
-    var PASTE = 'I failed my first startup at 24.\n\nNo investors. No team. Just me and a Google Doc.\n\nHere is what that taught me about building in public.';
+    var PASTE = 'I failed my first startup at 24.\n\nNo investors. No team. Just me and a Google Doc.\n\nHere is what it taught me.';
 
     function el(id) { return document.getElementById(id); }
     function wait(ms) { return new Promise(function(r){ setTimeout(r, ms); }); }
