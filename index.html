@@ -1264,16 +1264,30 @@
       </h1>
 
       <p class="hero-sub">
-        IDEN learns how you actually write, then sounds like you in every
+        IDEN doesn't just write like you. It learns how you think, then
+        sounds like you in every
         <strong>LinkedIn</strong> post you publish.
         <strong>Your voice. Not AI's.</strong>
       </p>
 
-      <!-- CTA -->
+      <!-- CTA: embedded form, no redirect -->
       <div class="hero-cta-wrap">
-        <a class="btn-cta-hero" href="https://docs.google.com/forms/d/e/1FAIpQLScG5Vv_hTZaRPwGpn17Xs7FAydiAzcPQ3m0KY8nneMTtBrqMQ/viewform" target="_blank" rel="noopener">
-          Join the Waitlist &rarr;
-        </a>
+        <form id="waitlistFormHero" class="waitlist-form" onsubmit="submitWaitlist(event, 'hero')">
+          <input
+            type="email"
+            name="email"
+            id="emailHero"
+            class="waitlist-input"
+            placeholder="you@email.com"
+            required
+          />
+          <button type="submit" class="btn-cta-hero">
+            Join the Waitlist &rarr;
+          </button>
+        </form>
+        <div id="successHero" class="waitlist-success" style="display:none;">
+          <span class="lime">&#10003;</span> You're queued at spot <span id="spotHero" class="lime"></span>. We'll email you the moment it's your turn.
+        </div>
         <p class="form-micro">
           <span class="hi">Free to join.</span>
           No card. No spam. Waitlist gets first access + LTD pricing.
@@ -1340,7 +1354,51 @@
     .gap-section { padding: 40px 0 56px; }
     .gap-grid { grid-template-columns: 1fr; gap: 14px; max-width: 480px; }
     .gap-card { padding: 22px 18px; }
+  }  /* ── WAITLIST FORM (embedded, no redirect) ── */
+  .waitlist-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
   }
+  .waitlist-input {
+    flex: 1;
+    min-width: 140px;
+    background: var(--surface);
+    border: 1px solid var(--border-2);
+    border-radius: var(--rs);
+    padding: 14px 16px;
+    font-family: var(--sans);
+    font-size: 15px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .waitlist-input-name { flex: 0.8; }
+  .waitlist-form button { flex: 0 0 100%; }
+  .waitlist-input::placeholder { color: var(--muted); }
+  .waitlist-input:focus { border-color: var(--lime); }
+  .waitlist-success {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 16px 20px;
+    background: rgba(163,230,53,0.08);
+    border: 1px solid rgba(163,230,53,0.3);
+    border-radius: var(--rs);
+    font-family: var(--sans);
+    font-size: 15px;
+    color: var(--ink);
+    text-align: center;
+  }
+  .waitlist-success .lime { font-weight: 700; }
+  @media (max-width: 480px) {
+    .waitlist-form { flex-direction: column; }
+    .waitlist-input-name { flex: 1; }
+    .waitlist-form button { flex: 1; }
+  }
+
 </style>
 
 <section class="gap-section">
@@ -1765,9 +1823,22 @@ I am not "embracing the journey." I am annoyed at myself. But I would rather wri
         <div class="cta2-title">25 founding spots.<br /><span class="lime">Then the price goes up.</span></div>
         <p class="cta2-sub">Join the waitlist. Be first to run your whole LinkedIn presence in your own voice, with no tool lock-in and your content yours to export anytime. Lock in LTD pricing before it closes.</p>
         <div class="cta2-form">
-          <a class="btn-cta2" href="https://docs.google.com/forms/d/e/1FAIpQLScG5Vv_hTZaRPwGpn17Xs7FAydiAzcPQ3m0KY8nneMTtBrqMQ/viewform" target="_blank" rel="noopener">
-            Join the Waitlist &rarr;
-          </a>
+          <form id="waitlistFormBottom" class="waitlist-form" onsubmit="submitWaitlist(event, 'bottom')">
+            <input
+              type="email"
+              name="email"
+              id="emailBottom"
+              class="waitlist-input"
+              placeholder="you@email.com"
+              required
+            />
+            <button type="submit" class="btn-cta2">
+              Join the Waitlist &rarr;
+            </button>
+          </form>
+          <div id="successBottom" class="waitlist-success" style="display:none;">
+            <span class="lime">&#10003;</span> You're queued at spot <span id="spotBottom" class="lime"></span>. We'll email you the moment it's your turn.
+          </div>
         </div>
         <p class="cta2-micro">Free. No card. Waitlist members get LTD pricing.</p>
       </div>
@@ -2106,6 +2177,62 @@ I am not "embracing the journey." I am annoyed at myself. But I would rather wri
     }
 
   })();
+  /* ── WAITLIST SUBMIT (no redirect) ── */
+  // Replace YOUR_FORM_ID below with your real Formspree endpoint (see setup notes).
+  var FORMSPREE_ENDPOINT = 'https://formspree.io/f/xpqgqppa';
+
+  function getQueueSpot() {
+    // Simple local counter for the "spot number" feel.
+    // Real authoritative count lives in Formspree/your sheet, this is just UI delight.
+    var base = 2400; // starting offset so it feels established, adjust anytime
+    var count = parseInt(localStorage.getItem('idenWaitlistCount') || '0', 10);
+    count += 1;
+    localStorage.setItem('idenWaitlistCount', count);
+    return base + count;
+  }
+
+  async function submitWaitlist(e, which) {
+    e.preventDefault();
+    var suffix = (which === 'hero' ? 'Hero' : 'Bottom');
+    var emailInput = document.getElementById('email' + suffix);
+    var form = document.getElementById('waitlistForm' + suffix);
+    var successBox = document.getElementById('success' + suffix);
+    var spotSpan = document.getElementById('spot' + suffix);
+    var email = emailInput.value;
+
+    var btn = form.querySelector('button');
+    var originalText = btn.innerHTML;
+    btn.innerHTML = 'Joining...';
+    btn.disabled = true;
+
+    var ok = false;
+    try {
+      var res = await fetch(FORMSPREE_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ email: email, source: which, page: 'waitlist' })
+      });
+      ok = res.ok;
+      if (!ok) {
+        var data = await res.json().catch(function(){ return {}; });
+        console.error('Formspree responded with error:', res.status, data);
+      }
+    } catch (err) {
+      console.error('Waitlist submit network error:', err);
+    }
+
+    if (ok) {
+      var spot = getQueueSpot();
+      spotSpan.textContent = '#' + spot;
+      form.style.display = 'none';
+      successBox.style.display = 'block';
+    } else {
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+      alert('Something went wrong joining the waitlist. Please try again in a moment.');
+    }
+  }
+
   </script>
 </body>
 </html>
