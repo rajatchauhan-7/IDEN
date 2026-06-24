@@ -1286,7 +1286,7 @@
           </button>
         </form>
         <div id="successHero" class="waitlist-success" style="display:none;">
-          <span class="lime">&#10003;</span> You're queued at spot <span id="spotHero" class="lime"></span>. We'll email you the moment it's your turn.
+          <span class="lime">&#10003;</span> You're on the list. Waitlist members get first access and <span class="lime">founding LTD pricing</span> before the 25 spots are gone.
         </div>
         <p class="form-micro">
           <span class="hi">Free to join.</span>
@@ -1837,7 +1837,7 @@ I am not "embracing the journey." I am annoyed at myself. But I would rather wri
             </button>
           </form>
           <div id="successBottom" class="waitlist-success" style="display:none;">
-            <span class="lime">&#10003;</span> You're queued at spot <span id="spotBottom" class="lime"></span>. We'll email you the moment it's your turn.
+            <span class="lime">&#10003;</span> You're on the list. Waitlist members get first access and <span class="lime">founding LTD pricing</span> before the 25 spots are gone.
           </div>
         </div>
         <p class="cta2-micro">Free. No card. Waitlist members get LTD pricing.</p>
@@ -2181,23 +2181,12 @@ I am not "embracing the journey." I am annoyed at myself. But I would rather wri
   // Replace YOUR_FORM_ID below with your real Formspree endpoint (see setup notes).
   var FORMSPREE_ENDPOINT = 'https://formspree.io/f/xpqgqppa';
 
-  function getQueueSpot() {
-    // Simple local counter for the "spot number" feel.
-    // Real authoritative count lives in Formspree/your sheet, this is just UI delight.
-    var base = 2400; // starting offset so it feels established, adjust anytime
-    var count = parseInt(localStorage.getItem('idenWaitlistCount') || '0', 10);
-    count += 1;
-    localStorage.setItem('idenWaitlistCount', count);
-    return base + count;
-  }
-
   async function submitWaitlist(e, which) {
     e.preventDefault();
     var suffix = (which === 'hero' ? 'Hero' : 'Bottom');
     var emailInput = document.getElementById('email' + suffix);
     var form = document.getElementById('waitlistForm' + suffix);
     var successBox = document.getElementById('success' + suffix);
-    var spotSpan = document.getElementById('spot' + suffix);
     var email = emailInput.value;
 
     var btn = form.querySelector('button');
@@ -2222,8 +2211,6 @@ I am not "embracing the journey." I am annoyed at myself. But I would rather wri
     }
 
     if (ok) {
-      var spot = getQueueSpot();
-      spotSpan.textContent = '#' + spot;
       form.style.display = 'none';
       successBox.style.display = 'block';
     } else {
